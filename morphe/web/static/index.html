@@ -2,563 +2,633 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>MORPHE OS 2000 - Adaptive Memory System</title>
-  <!-- 98.css / Y2K Windows Retro Styling -->
-  <link rel="stylesheet" href="https://unpkg.com/98.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+  <title>MORPHE CYBERPUNK // Neural Adaptive Memory Graph 3D</title>
+  <!-- 3D Force Graph & Three.js via CDN -->
+  <script src="https://unpkg.com/3d-force-graph"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+
   <style>
+    :root {
+      --neon-cyan: #00f3ff;
+      --neon-pink: #ff007f;
+      --neon-purple: #9d4edd;
+      --neon-yellow: #ffe600;
+      --neon-green: #00ff66;
+      --bg-dark: #070913;
+      --panel-bg: rgba(13, 17, 33, 0.85);
+      --border-cyan: rgba(0, 243, 255, 0.4);
+      --border-pink: rgba(255, 0, 127, 0.4);
+    }
+
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      background: #f7d6e0;
-      /* Y2K Pastel Pink & Lavender Grid Background matching user inspo */
-      background-image: 
-        linear-gradient(rgba(179, 136, 235, 0.25) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(179, 136, 235, 0.25) 1px, transparent 1px);
-      background-size: 24px 24px;
-      font-family: "MS Sans Serif", Arial, sans-serif;
-      margin: 0;
-      padding: 12px;
+      background: var(--bg-dark);
+      color: #e0e6ed;
+      font-family: 'Rajdhani', sans-serif;
+      min-height: 100vh;
       overflow-x: hidden;
-      width: 100vw;
+      background-image: 
+        radial-gradient(circle at 15% 50%, rgba(157, 78, 221, 0.15), transparent 40%),
+        radial-gradient(circle at 85% 30%, rgba(0, 243, 255, 0.12), transparent 45%),
+        linear-gradient(rgba(0, 243, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 243, 255, 0.04) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
     }
 
-    .desktop {
+    /* Scanline effect */
+    body::before {
+      content: " ";
+      display: block;
+      position: fixed;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+      background-size: 100% 4px;
+      z-index: 999;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    /* TOP CYBER BAR */
+    header {
+      padding: 18px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(7, 9, 19, 0.95);
+      border-bottom: 2px solid var(--neon-cyan);
+      box-shadow: 0 0 25px rgba(0, 243, 255, 0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+    }
+
+    .badge-core {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      border: 1px solid var(--neon-cyan);
+      color: var(--neon-cyan);
+      background: rgba(0, 243, 255, 0.1);
+      box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+      text-transform: uppercase;
+    }
+
+    .head-badge {
+      font-family: 'Fira Code', monospace;
+      color: var(--neon-yellow);
+      font-size: 14px;
+      background: rgba(255, 230, 0, 0.1);
+      border: 1px solid var(--neon-yellow);
+      padding: 5px 12px;
+      box-shadow: 0 0 10px rgba(255, 230, 0, 0.2);
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 20px auto;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    /* CONTROL TOOLBAR */
+    .cyber-toolbar {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-cyan);
+      padding: 16px 20px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .cyber-btn {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 10px 18px;
+      cursor: pointer;
+      text-transform: uppercase;
+      border: 1px solid;
+      background: transparent;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cyber-btn-cyan {
+      border-color: var(--neon-cyan);
+      color: var(--neon-cyan);
+      box-shadow: 0 0 12px rgba(0, 243, 255, 0.25);
+    }
+    .cyber-btn-cyan:hover {
+      background: var(--neon-cyan);
+      color: #000;
+      box-shadow: 0 0 25px rgba(0, 243, 255, 0.8);
+      transform: translateY(-2px);
+    }
+
+    .cyber-btn-pink {
+      border-color: var(--neon-pink);
+      color: var(--neon-pink);
+      box-shadow: 0 0 12px rgba(255, 0, 127, 0.25);
+    }
+    .cyber-btn-pink:hover {
+      background: var(--neon-pink);
+      color: #fff;
+      box-shadow: 0 0 25px rgba(255, 0, 127, 0.8);
+      transform: translateY(-2px);
+    }
+
+    .cyber-btn-red {
+      border-color: #ff3333;
+      color: #ff3333;
+      box-shadow: 0 0 12px rgba(255, 51, 51, 0.25);
+    }
+    .cyber-btn-red:hover {
+      background: #ff3333;
+      color: #fff;
+      box-shadow: 0 0 25px rgba(255, 51, 51, 0.8);
+    }
+
+    /* 3D GRAPH & HUD SECTION */
+    .viewport-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      min-height: 520px;
+    }
+
+    .panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-cyan);
+      border-radius: 4px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      position: relative;
+    }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      top: -1px; left: -1px;
+      width: 12px; height: 12px;
+      border-top: 3px solid var(--neon-cyan);
+      border-left: 3px solid var(--neon-cyan);
+    }
+
+    .panel-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--neon-cyan);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+      padding-bottom: 8px;
+    }
+
+    #3d-graph-container {
+      width: 100%;
+      height: 480px;
+      background: #02040a;
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 4px;
+      position: relative;
+    }
+
+    /* 7-STAGE LIVE ENGINE WORKFLOW PIPELINE */
+    .stages-container {
       display: flex;
       flex-direction: column;
       gap: 12px;
-      width: 100%;
-      max-width: 100%;
-      margin: 0 auto;
-    }
-
-    /* Fixed 2-column grid bound strictly to viewport width */
-    .main-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 12px;
-      width: 100%;
-      max-width: 100%;
-    }
-
-    /* Windows 98 / Y2K Pastel Window Overrides */
-    .window {
-      background: #fae1dd;
-      border: 3px solid #70587c;
-      box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.35);
-      min-width: 0;
-      max-width: 100%;
-    }
-
-    .title-bar {
-      background: linear-gradient(90deg, #9b5de5, #f15bb5);
-      padding: 6px 8px;
-    }
-
-    .title-bar-text {
-      font-size: 14px !important;
-      font-weight: bold;
-      color: #ffffff;
-      text-shadow: 1px 1px 1px #000;
-      letter-spacing: 0.5px;
-    }
-
-    .window-body {
-      padding: 12px;
-    }
-
-    .toolbar {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 8px;
-      flex-wrap: wrap;
-      background: #e8dff5;
-      padding: 8px;
-      border: 2px inset #ffffff;
-    }
-
-    /* Graph containers strictly bound */
-    #cy-graph, #cy-diff {
-      width: 100%;
-      max-width: 100%;
-      height: 380px;
-      background: #ffffff;
-      border: 2px inset #9b5de5;
-    }
-
-    .status-bar {
-      margin-top: 8px;
-      background: #d8e2dc;
-      border: 1px solid #70587c;
-    }
-
-    .status-bar-field {
-      font-size: 12px !important;
-      font-weight: bold;
-      color: #333333;
-    }
-
-    .log-box {
-      width: 100%;
-      height: 130px;
-      background: #110e1b;
-      color: #00f5d4;
-      font-family: "Courier New", monospace;
-      font-size: 13px;
-      padding: 8px;
-      box-sizing: border-box;
-      overflow-y: scroll;
-      border: 2px inset #9b5de5;
-    }
-
-    .query-result-box {
-      height: 140px;
+      height: 480px;
       overflow-y: auto;
-      background: #ffffff;
-      border: 2px inset #9b5de5;
-      padding: 8px;
+      padding-right: 6px;
+    }
+
+    .stage-card {
+      background: rgba(19, 26, 48, 0.8);
+      border-left: 4px solid var(--neon-cyan);
+      border-radius: 2px;
+      padding: 10px 14px;
       font-size: 13px;
+      transition: all 0.3s;
     }
 
-    .badge-overload { background: #ff4d6d; color: white; padding: 2px 6px; font-weight: bold; font-size: 11px; }
-    .badge-green { background: #06d6a0; color: black; padding: 2px 6px; font-weight: bold; font-size: 11px; }
-    .badge-amber { background: #fee440; color: black; padding: 2px 6px; font-weight: bold; font-size: 11px; }
+    .stage-card:hover {
+      border-left-color: var(--neon-pink);
+      transform: translateX(4px);
+      box-shadow: 0 0 15px rgba(255, 0, 127, 0.2);
+    }
 
-    .y2k-btn {
-      font-weight: bold;
+    .stage-header {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'Orbitron', sans-serif;
       font-size: 12px;
-      cursor: pointer;
-      background: #f8edeb;
-      border: 2px outset #ffffff;
-      padding: 3px 8px;
+      color: var(--neon-cyan);
+      font-weight: 700;
+      margin-bottom: 4px;
     }
 
-    .y2k-btn:active {
-      border: 2px inset #000000;
+    .stage-body {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: #9cb3c9;
+      line-height: 1.5;
     }
 
-    .section-header {
-      font-size: 14px;
-      font-weight: bold;
-      color: #4a0e4e;
+    .stage-body strong {
+      color: var(--neon-yellow);
+    }
+
+    /* QUERY & COMMIT GRID */
+    .lower-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .cyber-input {
+      width: 100%;
+      background: #0b0f19;
+      border: 1px solid var(--neon-cyan);
+      color: #fff;
+      font-family: 'Fira Code', monospace;
+      padding: 10px 14px;
+      font-size: 13px;
+      outline: none;
+    }
+    .cyber-input:focus {
+      border-color: var(--neon-pink);
+      box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+    }
+
+    .results-stream {
+      margin-top: 10px;
+      height: 180px;
+      overflow-y: auto;
+      background: #05070e;
+      border: 1px solid rgba(0, 243, 255, 0.15);
+      padding: 10px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+    }
+
+    .stream-item {
+      padding: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       margin-bottom: 6px;
+    }
+
+    .tag-superseded {
+      background: var(--neon-pink);
+      color: #fff;
+      font-size: 9px;
+      padding: 2px 6px;
+      font-weight: bold;
+    }
+
+    /* Scrollbar cyberpunk */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #070913;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--neon-cyan);
+      box-shadow: 0 0 10px var(--neon-cyan);
     }
   </style>
 </head>
 <body>
 
-<div class="desktop">
-
-  <!-- TOP BANNER WINDOW -->
-  <div class="window">
-    <div class="title-bar">
-      <div class="title-bar-text">&#128190; MORPHE_CORE.EXE - Memory-Oriented Reconfigurable Plasticity (Y2K Edition)</div>
-      <div class="title-bar-controls">
-        <button aria-label="Minimize"></button>
-        <button aria-label="Maximize"></button>
-        <button aria-label="Close"></button>
-      </div>
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <h1>MORPHE // NEURAL OS</h1>
+      <span class="badge-core">RL-First CAS Memory Topology</span>
     </div>
-    <div class="window-body">
-      <div class="toolbar">
-        <strong style="font-size:13px; color:#4a0e4e;">[1. Upload Chat PDF]:</strong>
-        <input type="file" id="pdf-input" accept="application/pdf,.txt,.md" style="font-size:12px;" />
-        <button class="y2k-btn" onclick="uploadPDF()">Ingest PDF</button>
-
-        <span style="border-left: 2px groove #b388eb; height: 24px; margin: 0 6px;"></span>
-
-        <strong style="font-size:13px; color:#4a0e4e;">[2. RL Adaptation Cycle]:</strong>
-        <button class="y2k-btn" style="color: #0033aa;" onclick="runAdaptationCycle()">Run Adaptation Cycle</button>
-        <button class="y2k-btn" style="color: #cc0000;" onclick="triggerBreakIt()">BREAK IT (Auto-Reject Demo)</button>
-
-        <span style="border-left: 2px groove #b388eb; height: 24px; margin: 0 6px;"></span>
-
-        <strong style="font-size:13px;">Active Head:</strong>
-        <span id="head-version-display" style="font-weight:bold; color: #7209b7; font-size:13px;">None</span>
-      </div>
+    <div style="display:flex; align-items:center; gap:16px;">
+      <span style="font-size:12px; color:#aaa;">ACTIVE HEAD:</span>
+      <span class="head-badge" id="head-version-display">INIT_ROOT</span>
     </div>
-  </div>
+  </header>
 
-  <!-- MAIN DUAL VIEW GRID (BOUNDED VIEWPORT) -->
-  <div class="main-grid">
+  <div class="container">
 
-    <!-- WINDOW 1: LIVE GRAPH TOPOLOGY -->
-    <div class="window">
-      <div class="title-bar">
-        <div class="title-bar-text">&#127760; Live Architecture Topology (Cytoscape Graph View)</div>
-        <div class="title-bar-controls">
-          <button aria-label="Help"></button>
-        </div>
-      </div>
-      <div class="window-body">
-        <div class="section-header">Current Memory Graph Nodes & Inter-Module Pathways</div>
-        <div style="font-size: 12px; margin-bottom: 6px;">
-          Legend: <span class="badge-overload">Red: Overloaded</span> | <span style="background:#a0c4ff; padding:2px 6px; font-weight:bold;">Blue: Balanced</span> | <span class="badge-amber">Yellow: Shortcut</span> | <span style="background:#8338ec; color:#fff; padding:2px 6px; font-weight:bold;">Purple: Supersedes</span>
-        </div>
-        <div id="cy-graph"></div>
-        <div class="status-bar">
-          <p class="status-bar-field" id="graph-stats">Modules: 0 | Edges: 0</p>
-          <p class="status-bar-field" id="selected-node-info">Click any module node to inspect charter</p>
-        </div>
-      </div>
+    <!-- TOOLBAR -->
+    <div class="cyber-toolbar">
+      <span style="font-weight:700; color:var(--neon-cyan); font-size:13px; font-family:'Orbitron';">INGEST DOCUMENT:</span>
+      <input type="file" id="pdf-input" accept="application/pdf,.txt,.md" style="font-size:12px; color:#fff;" />
+      <button class="cyber-btn cyber-btn-cyan" onclick="uploadPDF()">UPLOAD & INGEST</button>
+
+      <span style="border-left: 1px solid rgba(0,243,255,0.3); height: 28px;"></span>
+
+      <span style="font-weight:700; color:var(--neon-pink); font-size:13px; font-family:'Orbitron';">AUTONOMOUS RL LOOP:</span>
+      <button class="cyber-btn cyber-btn-pink" onclick="run7StageAdaptation()">TRIGGER 7-STAGE ADAPTATION</button>
+      <button class="cyber-btn cyber-btn-red" onclick="triggerBreakIt()">BREAK IT (AUTO-REJECT)</button>
     </div>
 
-    <!-- WINDOW 2: VISUAL DELTA GRAPH (DIFF VIEW) -->
-    <div class="window">
-      <div class="title-bar">
-        <div class="title-bar-text">&#128260; Visual Delta Graph (Cytoscape Diff View - Vn vs Vn+1)</div>
-        <div class="title-bar-controls">
-          <button aria-label="Help"></button>
+    <!-- MAIN VIEWPORT GRID -->
+    <div class="viewport-grid">
+
+      <!-- LEFT: 3D INTERACTIVE GRAPH -->
+      <div class="panel">
+        <div class="panel-title">
+          <span>// 3D NEURAL TOPOLOGY GRAPH</span>
+          <span style="font-size:11px; font-family:'Fira Code'; color:var(--neon-yellow);" id="graph-stats">MODULES: 0 | EDGES: 0</span>
         </div>
-      </div>
-      <div class="window-body">
-        <div class="section-header">Structural Mutation Comparison (Delta Highlight)</div>
-        <div style="font-size: 12px; margin-bottom: 6px;">
-          Delta Legend: <span class="badge-green">Green: Split / Shortcut</span> | <span class="badge-overload">Red: Pruned / Merged</span> | <span class="badge-amber">Amber: Adjusted</span>
+        <div style="font-size:11px; color:#888; margin-bottom:8px; font-family:'Fira Code';">
+          [CONTROLS: Left Click + Drag = Rotate | Right Click = Pan | Scroll = Zoom | Hover = Inspect Node]
         </div>
-        <div id="cy-diff"></div>
-        <div class="status-bar">
-          <p class="status-bar-field" id="diff-summary">Select versions in ledger below to compare</p>
+        <div id="3d-graph-container"></div>
+      </div>
+
+      <!-- RIGHT: 7-STAGE WORKFLOW ENGINE -->
+      <div class="panel">
+        <div class="panel-title">
+          <span>// 7-STAGE RL ENGINE WORKFLOW</span>
+          <span style="font-size:10px; font-family:'Fira Code'; color:var(--neon-green);" id="engine-status">STANDBY</span>
         </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- QUERY & TIME-TRAVEL COMMIT TREE GRID -->
-  <div class="main-grid">
-
-    <!-- WINDOW 3: RETRIEVAL & QUERY INSPECTOR -->
-    <div class="window">
-      <div class="title-bar">
-        <div class="title-bar-text">&#128269; Query Search & Temporal Memory Inspector</div>
-      </div>
-      <div class="window-body">
-        <div class="section-header">Ask Your Stored Knowledge (Current vs. Historical)</div>
-        <div style="display: flex; gap: 6px; margin-bottom: 8px;">
-          <input type="text" id="query-input" placeholder="e.g. 'What did the user say about the 4 hour time constraint?' or 'What do we use now?'" style="flex:1; font-size:12px; padding:4px;" />
-          <button class="y2k-btn" onclick="executeSearch()">Search Memory</button>
-        </div>
-        <div class="query-result-box" id="query-results">
-          <i>Enter a query above to test memory recall without sliding-window amnesia...</i>
-        </div>
-      </div>
-    </div>
-
-    <!-- WINDOW 4: COMMIT HISTORY TREE & ROLLBACK SLIDER -->
-    <div class="window">
-      <div class="title-bar">
-        <div class="title-bar-text">&#127795; Git-Style Ledger Tree & Time-Travel Rollback</div>
-      </div>
-      <div class="window-body">
-        <div class="section-header">Immutable CAS Commit History & Version Lineage</div>
-        <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 8px;">
-          <label><strong style="font-size:12px;">Version:</strong></label>
-          <select id="version-select" style="flex:1; font-size:12px; padding:3px;" onchange="handleVersionChange()"></select>
-          <button class="y2k-btn" onclick="executeRollback()">Rollback to Version</button>
-        </div>
-        <div class="query-result-box" id="version-details">
-          <i>Commit history tree loaded from SQLite ledger...</i>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- SYSTEM LOG CONSOLE -->
-  <div class="window">
-    <div class="title-bar">
-      <div class="title-bar-text">&#128187; TELEMETRY_LOG.TXT - Pipeline Execution Terminal</div>
-    </div>
-    <div class="window-body">
-      <div class="log-box" id="log-terminal">
-[MORPHE OS 2000 Initialized] Waiting for chat history PDF upload...
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<script>
-  let cyGraph = null;
-  let cyDiff = null;
-
-  function appendLog(msg) {
-    const term = document.getElementById("log-terminal");
-    const ts = new Date().toLocaleTimeString();
-    term.innerHTML += `\n[${ts}] ${msg}`;
-    term.scrollTop = term.scrollHeight;
-  }
-
-  function initCytoscape() {
-    cyGraph = cytoscape({
-      container: document.getElementById('cy-graph'),
-      style: [
-        {
-          selector: 'node',
-          style: {
-            'background-color': 'data(color)',
-            'label': 'data(label)',
-            'font-size': '11px',
-            'font-weight': 'bold',
-            'font-family': 'MS Sans Serif, Arial, sans-serif',
-            'text-wrap': 'wrap',
-            'width': 'data(size)',
-            'height': 'data(size)',
-            'border-width': 2,
-            'border-color': '#4a0e4e',
-            'text-valign': 'center',
-            'text-halign': 'center'
-          }
-        },
-        {
-          selector: 'edge',
-          style: {
-            'width': 3,
-            'line-color': 'data(color)',
-            'target-arrow-color': 'data(color)',
-            'target-arrow-shape': 'triangle',
-            'curve-style': 'bezier',
-            'label': 'data(edge_type)',
-            'font-size': '9px',
-            'font-weight': 'bold'
-          }
-        }
-      ],
-      layout: { name: 'cose', animate: false }
-    });
-
-    cyGraph.on('tap', 'node', function(evt){
-      const node = evt.target;
-      document.getElementById("selected-node-info").innerText = 
-        `Selected: ${node.data('id')} | Charter: ${node.data('charter')}`;
-    });
-
-    cyDiff = cytoscape({
-      container: document.getElementById('cy-diff'),
-      style: [
-        {
-          selector: 'node',
-          style: {
-            'background-color': 'data(color)',
-            'label': 'data(label)',
-            'font-size': '11px',
-            'font-weight': 'bold',
-            'width': 50,
-            'height': 50,
-            'border-width': 2,
-            'border-color': '#000',
-            'text-valign': 'center',
-            'text-halign': 'center'
-          }
-        },
-        {
-          selector: 'edge',
-          style: {
-            'width': 3,
-            'line-color': 'data(color)',
-            'target-arrow-color': 'data(color)',
-            'target-arrow-shape': 'triangle',
-            'label': 'data(label)',
-            'font-size': '9px',
-            'font-weight': 'bold'
-          }
-        }
-      ],
-      layout: { name: 'circle', animate: false }
-    });
-  }
-
-  async function refreshGraph() {
-    try {
-      const res = await fetch('/api/graph');
-      const data = await res.json();
-      document.getElementById("head-version-display").innerText = data.head_version || "Root";
-      document.getElementById("graph-stats").innerText = `Modules: ${data.total_modules} | Edges: ${data.total_edges}`;
-
-      cyGraph.elements().remove();
-      cyGraph.add(data.elements);
-      cyGraph.layout({ name: 'cose', animate: false }).run();
-      await refreshVersions();
-    } catch(err) {
-      appendLog("Error refreshing graph: " + err.message);
-    }
-  }
-
-  async function refreshVersions() {
-    try {
-      const res = await fetch('/api/versions');
-      const data = await res.json();
-      const sel = document.getElementById("version-select");
-      sel.innerHTML = "";
-
-      const detailsBox = document.getElementById("version-details");
-      detailsBox.innerHTML = "";
-
-      data.versions.forEach(v => {
-        const opt = document.createElement("option");
-        opt.value = v.version_id;
-        opt.text = `${v.version_id} - ${v.reason_card.substring(0, 45)}...`;
-        if (v.is_head) opt.selected = true;
-        sel.appendChild(opt);
-
-        detailsBox.innerHTML += `
-          <div style="border-bottom: 1px dotted #b388eb; padding: 4px 0;">
-            <strong>${v.version_id}</strong> ${v.is_head ? '<span class="badge-green">HEAD</span>' : ''}
-            <div>${v.reason_card}</div>
-            <div style="color:#555; font-size:11px;">Parent: ${v.parent_version || 'None'} | Modules: ${v.module_count} | Edges: ${v.edge_count}</div>
+        <div class="stages-container" id="stages-stream">
+          <div style="color:#556; font-size:12px; font-style:italic; padding:20px; text-align:center;">
+            Trigger adaptation above to view live inter-stage data flow (Inputs -> Diagnostics -> Bandit -> IPS -> Sandbox -> Reward -> Gate).
           </div>
-        `;
-      });
+        </div>
+      </div>
 
-      if (data.versions.length >= 2) {
-        const v1 = data.versions[data.versions.length - 2].version_id;
-        const v2 = data.versions[data.versions.length - 1].version_id;
-        loadDiffView(v1, v2);
+    </div>
+
+    <!-- LOWER GRID: RETRIEVAL & VERSION LINEAGE -->
+    <div class="lower-grid">
+
+      <!-- QUERY & TEMPORAL DISAMBIGUATION -->
+      <div class="panel">
+        <div class="panel-title">
+          <span>// TEMPORAL MEMORY QUERY RETRIEVAL</span>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="query-input" class="cyber-input" placeholder="Query knowledge (e.g. 'What was used before?' or 'Current RL policy?')" />
+          <button class="cyber-btn cyber-btn-cyan" onclick="executeSearch()">SEARCH</button>
+        </div>
+        <div class="results-stream" id="query-results">
+          <span style="color:#556;">Awaiting query execution...</span>
+        </div>
+      </div>
+
+      <!-- GIT-STYLE LEDGER & ROLLBACK -->
+      <div class="panel">
+        <div class="panel-title">
+          <span>// TIME-TRAVEL COMMIT LEDGER</span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <select id="version-select" class="cyber-input" style="flex:1;"></select>
+          <button class="cyber-btn cyber-btn-pink" onclick="executeRollback()">ROLLBACK</button>
+        </div>
+        <div class="results-stream" id="version-details">
+          <span style="color:#556;">Loading version history...</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    let graph3D = null;
+
+    function init3DGraph() {
+      const elem = document.getElementById('3d-graph-container');
+      graph3D = ForceGraph3D()(elem)
+        .backgroundColor('#02040a')
+        .nodeLabel(node => `${node.id}\nItems: ${node.record_count}\nCharter: ${node.charter}`)
+        .nodeColor(node => node.color)
+        .nodeVal(node => Math.max(8, node.record_count * 2.5))
+        .linkColor(link => link.color)
+        .linkWidth(2.5)
+        .linkDirectionalParticles(2)
+        .linkDirectionalParticleSpeed(0.006)
+        .linkDirectionalParticleWidth(2);
+    }
+
+    async function refreshGraph() {
+      try {
+        const res = await fetch('/api/graph');
+        const data = await res.json();
+        document.getElementById("head-version-display").innerText = data.head_version || "ROOT";
+        document.getElementById("graph-stats").innerText = `MODULES: ${data.total_modules} | EDGES: ${data.total_edges}`;
+
+        const gData = {
+          nodes: data.elements.filter(e => !e.data.source).map(e => ({
+            id: e.data.id,
+            record_count: e.data.record_count,
+            charter: e.data.charter,
+            color: e.data.record_count >= 8 ? '#ff007f' : '#00f3ff'
+          })),
+          links: data.elements.filter(e => e.data.source).map(e => ({
+            source: e.data.source,
+            target: e.data.target,
+            color: e.data.edge_type === 'shortcut' ? '#ffe600' : e.data.edge_type === 'supersedes' ? '#9d4edd' : '#00ff66'
+          }))
+        };
+
+        graph3D.graphData(gData);
+        await refreshVersions();
+      } catch(err) {
+        console.error("Graph refresh failed:", err);
       }
-    } catch(err) {
-      appendLog("Error loading versions: " + err);
-    }
-  }
-
-  async function loadDiffView(v1, v2) {
-    try {
-      const res = await fetch(`/api/diff?v1=${v1}&v2=${v2}`);
-      const data = await res.json();
-      document.getElementById("diff-summary").innerText = `Diff (${v1} -> ${v2}): ${data.summary}`;
-      cyDiff.elements().remove();
-      cyDiff.add(data.elements);
-      cyDiff.layout({ name: 'circle', animate: false }).run();
-    } catch(err) {
-      console.log("Diff view skipped:", err);
-    }
-  }
-
-  async function uploadPDF() {
-    const input = document.getElementById('pdf-input');
-    if (!input.files || input.files.length === 0) {
-      alert("Please select a chat PDF file first!");
-      return;
     }
 
-    const file = input.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
+    async function refreshVersions() {
+      try {
+        const res = await fetch('/api/versions');
+        const data = await res.json();
+        const sel = document.getElementById("version-select");
+        const details = document.getElementById("version-details");
+        sel.innerHTML = "";
+        details.innerHTML = "";
 
-    appendLog(`Uploading and ingesting '${file.name}' into content-addressed memory...`);
+        data.versions.forEach(v => {
+          const opt = document.createElement("option");
+          opt.value = v.version_id;
+          opt.text = `${v.version_id} [${v.reason_card.substring(0, 40)}...]`;
+          if (v.is_head) opt.selected = true;
+          sel.appendChild(opt);
 
-    try {
-      const res = await fetch('/api/ingest-pdf', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (res.ok) {
-        appendLog(`[Ingestion Complete] Parsed ${data.turns_parsed} turns | Stored ${data.records_stored} records into ${data.modules_created.length} modules!`);
-        appendLog(`Temporal supersession detected: ${data.superseded_detected}`);
-        await refreshGraph();
-      } else {
-        appendLog(`[Ingestion Error]: ${data.detail}`);
-      }
-    } catch (err) {
-      appendLog(`Failed to upload: ${err.message}`);
+          details.innerHTML += `
+            <div class="stream-item">
+              <strong style="color:var(--neon-cyan);">${v.version_id}</strong> ${v.is_head ? '<span style="color:var(--neon-green); font-weight:bold;">[HEAD]</span>' : ''}
+              <div style="color:#bbb;">${v.reason_card}</div>
+              <div style="font-size:10px; color:#667;">Modules: ${v.module_count} | Edges: ${v.edge_count}</div>
+            </div>
+          `;
+        });
+      } catch(e) {}
     }
-  }
 
-  async function executeSearch() {
-    const q = document.getElementById("query-input").value;
-    if (!q) return;
-
-    appendLog(`Querying memory: "${q}"`);
-    try {
-      const res = await fetch('/api/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: q, top_k: 3 })
-      });
-      const data = await res.json();
-      const container = document.getElementById("query-results");
-      container.innerHTML = "";
-
-      if (data.hits.length === 0) {
-        container.innerHTML = "<i>No matching records retrieved.</i>";
+    async function uploadPDF() {
+      const input = document.getElementById('pdf-input');
+      if (!input.files || input.files.length === 0) {
+        alert("Select a PDF document first!");
         return;
       }
 
-      data.hits.forEach((h, idx) => {
-        container.innerHTML += `
-          <div style="border-bottom: 1px dotted #b388eb; padding: 4px 0;">
-            <strong>#${idx+1} [Module: ${h.module}] (Score: ${h.score})</strong>
-            ${h.archived ? '<span class="badge-overload" style="font-size:9px;">ARCHIVED / HISTORICAL</span>' : ''}
-            <div>"${h.text}"</div>
-          </div>
-        `;
-      });
-      appendLog(`Retrieved ${data.hits.length} records for query.`);
-    } catch(err) {
-      appendLog("Query error: " + err.message);
-    }
-  }
+      const file = input.files[0];
+      const formData = new FormData();
+      formData.append("file", file);
 
-  async function runAdaptationCycle() {
-    appendLog("Running autonomous RL adaptation cycle (Weakness Scan -> Sandbox Trial -> Reward -> Gate)...");
-    try {
-      const res = await fetch('/api/adapt/step', { method: 'POST' });
-      const data = await res.json();
-      appendLog(`[RL Adaptation Result]: Status: ${data.status.toUpperCase()} | Action: ${data.action} | Reward: ${data.reward}`);
-      if (data.status === "committed") {
-        appendLog(`-> Committed Version: ${data.version_id}`);
-        appendLog(`-> Reason Card: ${data.reason_card}`);
-        await refreshGraph();
+      try {
+        const res = await fetch('/api/ingest-pdf', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (res.ok) {
+          alert(`Document '${file.name}' successfully parsed into ${data.records_stored} immutable records across ${data.modules_created.length} topic modules!`);
+          await refreshGraph();
+        } else {
+          alert("Upload failed: " + data.detail);
+        }
+      } catch (err) {
+        alert("Upload error: " + err.message);
       }
-    } catch(err) {
-      appendLog("Adaptation error: " + err.message);
     }
-  }
 
-  async function triggerBreakIt() {
-    appendLog("Injecting deliberately bad mutation (BREAK IT DEMO)...");
-    try {
-      const res = await fetch('/api/break-it', { method: 'POST' });
-      const data = await res.json();
-      appendLog(`[BREAK IT OUTCOME]: ${data.message}`);
-      appendLog(`-> Negative Reward: ${data.reward} (Failed threshold)`);
-      appendLog(`-> Active HEAD preserved: ${data.head_version_preserved}`);
-    } catch(err) {
-      appendLog("Break it error: " + err.message);
+    async function run7StageAdaptation() {
+      document.getElementById("engine-status").innerText = "RUNNING ADAPTATION CYCLE...";
+      const stream = document.getElementById("stages-stream");
+      stream.innerHTML = "<div style='color:var(--neon-yellow);'>[EXECUTING 7-STAGE PIPELINE]...</div>";
+
+      try {
+        const res = await fetch('/api/adapt/step', { method: 'POST' });
+        const data = await res.json();
+        document.getElementById("engine-status").innerText = `STATUS: ${data.status.toUpperCase()}`;
+
+        if (data.stages) {
+          stream.innerHTML = "";
+          data.stages.forEach(s => {
+            stream.innerHTML += `
+              <div class="stage-card">
+                <div class="stage-header">
+                  <span>STAGE ${s.stage}: ${s.name}</span>
+                  <span style="color:${s.status === 'PASS' || s.status === 'COMMITTED' ? 'var(--neon-green)' : 'var(--neon-yellow)'};">[${s.status}]</span>
+                </div>
+                <div class="stage-body">
+                  <div><strong>INPUT:</strong> ${s.input}</div>
+                  <div><strong>OUTPUT:</strong> ${s.output}</div>
+                </div>
+              </div>
+            `;
+          });
+        }
+        await refreshGraph();
+      } catch(err) {
+        alert("Adaptation error: " + err.message);
+      }
     }
-  }
 
-  async function executeRollback() {
-    const sel = document.getElementById("version-select");
-    const v = sel.value;
-    if (!v) return;
-
-    appendLog(`Rolling back topology to Version: ${v}...`);
-    try {
-      const res = await fetch('/api/rollback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ version_id: v })
-      });
-      const data = await res.json();
-      appendLog(`[Rollback Successful] Active HEAD is now: ${data.active_version}`);
-      await refreshGraph();
-    } catch(err) {
-      appendLog("Rollback error: " + err.message);
+    async function triggerBreakIt() {
+      try {
+        const res = await fetch('/api/break-it', { method: 'POST' });
+        const data = await res.json();
+        alert(`[BREAK IT ADVERSARIAL TEST]\n${data.message}\nCalculated Reward: ${data.reward}\nHEAD Version Preserved: ${data.head_version_preserved}`);
+      } catch(err) {
+        alert("Break-it error: " + err.message);
+      }
     }
-  }
 
-  function handleVersionChange() {
-    const sel = document.getElementById("version-select");
-    appendLog(`Selected version in tree: ${sel.value}`);
-  }
+    async function executeSearch() {
+      const q = document.getElementById("query-input").value;
+      if (!q) return;
 
-  window.onload = function() {
-    initCytoscape();
-    refreshGraph();
-  };
-</script>
+      const container = document.getElementById("query-results");
+      container.innerHTML = "<span style='color:var(--neon-cyan);'>Routing & scoring memory modules...</span>";
+
+      try {
+        const res = await fetch('/api/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: q, top_k: 3 })
+        });
+        const data = await res.json();
+        container.innerHTML = "";
+
+        if (data.hits.length === 0) {
+          container.innerHTML = "<span style='color:#777;'>No matching memories found.</span>";
+          return;
+        }
+
+        data.hits.forEach((h, idx) => {
+          container.innerHTML += `
+            <div class="stream-item">
+              <strong style="color:var(--neon-cyan);">#${idx+1} [Module: ${h.module}]</strong> (Score: ${h.score})
+              ${h.archived ? '<span class="tag-superseded">SUPERSEDED / HISTORICAL</span>' : ''}
+              <div style="color:#eee; margin-top:3px;">"${h.text}"</div>
+            </div>
+          `;
+        });
+      } catch(e) {
+        container.innerHTML = "Query error: " + e.message;
+      }
+    }
+
+    async function executeRollback() {
+      const sel = document.getElementById("version-select");
+      const v = sel.value;
+      if (!v) return;
+
+      try {
+        const res = await fetch('/api/rollback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ version_id: v })
+        });
+        const data = await res.json();
+        alert(`Rollback successful! Active HEAD restored to: ${data.active_version}`);
+        await refreshGraph();
+      } catch(err) {
+        alert("Rollback error: " + err.message);
+      }
+    }
+
+    window.onload = function() {
+      init3DGraph();
+      refreshGraph();
+    };
+  </script>
 
 </body>
 </html>
