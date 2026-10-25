@@ -18,6 +18,7 @@ from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Union
 import networkx as nx
 import numpy as np
 
+from morphe.storage.ledger import VersionLedger
 from morphe.storage.record_store import RecordStore
 from morphe.topology.diff import EdgeDiff, ModuleDiff, TopologyDiff
 from morphe.topology.models import Edge, EdgeType, ModuleManifest, TopologySnapshot, VersionCommit
@@ -29,7 +30,7 @@ class MorpheBackend:
     MORPHE Graph & Versioning Backend.
     Maintains:
     - Immutable RecordStore reference
-    - Version history tree (ledger)
+    - VersionLedger (SQLite persistent ledger)
     - Active HEAD version pointer
     - Working / Staging Topology (modules, edges, and NetworkX DiGraph)
     """
@@ -37,9 +38,11 @@ class MorpheBackend:
     def __init__(
         self,
         record_store: Optional[RecordStore] = None,
+        ledger: Optional[VersionLedger] = None,
         initial_snapshot: Optional[TopologySnapshot] = None,
     ):
         self.record_store = record_store if record_store is not None else RecordStore(":memory:")
+        self.version_ledger = ledger if ledger is not None else VersionLedger(":memory:")
         self.ledger: Dict[str, VersionCommit] = {}
         self.version_history: List[str] = []
         self.head_version_id: Optional[str] = None
@@ -279,6 +282,8 @@ class MorpheBackend:
         self.ledger[commit_obj.version_id] = commit_obj
         self.version_history.append(commit_obj.version_id)
         self.head_version_id = commit_obj.version_id
+        # Persist to SQLite ledger
+        self.version_ledger.record_commit(commit_obj, set_as_head=True)
 
     # -------------------------------------------------------------
     # 4. Rollback
@@ -286,14 +291,19 @@ class MorpheBackend:
     def rollback(self, target_version_id: str) -> bool:
         """
         Rollback staging topology to match the snapshot at target_version_id.
-        Moves HEAD pointer to target_version_id.
+        Moves HEAD pointer to target_version_id in memory and SQLite ledger.
         """
-        if target_version_id not in self.ledger:
-            return False
+        target_commit = self.ledger.get(target_version_id)
+        if target_commit is None:
+            # Check if present in SQLite ledger
+            target_commit = self.version_ledger.get_version(target_version_id)
+            if target_commit is None:
+                return False
+            self.ledger[target_version_id] = target_commit
 
-        target_commit = self.ledger[target_version_id]
         self._load_snapshot_into_staging(target_commit.snapshot)
         self.head_version_id = target_version_id
+        self.version_ledger.set_head(target_version_id)
         return True
 
     # -------------------------------------------------------------
