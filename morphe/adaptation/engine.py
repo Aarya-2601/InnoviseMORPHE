@@ -142,6 +142,21 @@ class MutationEngine:
         if labels is None:
             if len(embs) == len(all_ids):
                 matrix = np.stack(embs, axis=0)
+                # Check for zero variance / identical vectors before invoking KMeans
+                # to avoid ConvergenceWarning: Number of distinct clusters (1) < n_clusters (2)
+                var = np.var(matrix, axis=0).sum()
+                if var < 1e-6:
+                    # All vectors are effectively identical: split by half deterministically
+                    mid = len(all_ids) // 2
+                    cluster1_ids = all_ids[mid:]
+                    new_id = f"{mod_id}_sub1"
+                    return MutationAction.split_module(
+                        module_id=mod_id,
+                        new_module_id=new_id,
+                        migrated_record_ids=cluster1_ids,
+                        new_module_charter=f"Sub-cluster split from {mod_id}",
+                    )
+
                 km = KMeans(n_clusters=2, random_state=42, n_init="auto")
                 labels = km.fit_predict(matrix)
             else:
