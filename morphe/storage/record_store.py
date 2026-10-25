@@ -21,6 +21,8 @@ from typing import Any, Dict, List, Optional, Sequence, Union
 
 import numpy as np
 
+from morphe.models.metadata import MemoryType, RecordMetadata
+
 
 @dataclass(frozen=True)
 class Record:
@@ -45,14 +47,17 @@ class Record:
     def create(
         cls,
         text: str,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[Union[Dict[str, Any], RecordMetadata]] = None,
         embedding: Optional[Union[np.ndarray, Sequence[float]]] = None,
         created_at: Optional[float] = None,
         archived: bool = False,
     ) -> Record:
         """Factory method to construct an immutable record."""
         record_id = cls.compute_id(text)
-        meta = dict(metadata or {})
+        if isinstance(metadata, RecordMetadata):
+            meta = metadata.to_dict()
+        else:
+            meta = RecordMetadata.from_dict(metadata).to_dict()
         
         emb_arr = None
         if embedding is not None:
@@ -66,6 +71,11 @@ class Record:
             created_at=created_at if created_at is not None else time.time(),
             archived=archived,
         )
+
+    @property
+    def parsed_metadata(self) -> RecordMetadata:
+        """Returns typed metadata helper."""
+        return RecordMetadata.from_dict(self.metadata)
 
     def to_dict(self, include_embedding: bool = False) -> Dict[str, Any]:
         """Serialize record to dictionary."""
@@ -102,12 +112,24 @@ class RecordStore:
                     id TEXT PRIMARY KEY,
                     text TEXT NOT NULL,
                     metadata_json TEXT NOT NULL,
+                    project TEXT NOT NULL DEFAULT 'default',
+                    memory_type TEXT NOT NULL DEFAULT 'fact',
+                    timestamp REAL NOT NULL,
                     embedding_blob BLOB,
                     embedding_dim INTEGER,
                     created_at REAL NOT NULL,
                     archived INTEGER NOT NULL DEFAULT 0
                 )
                 """
+            )
+            self.conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_records_project ON records(project)"
+            )
+            self.conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_records_memory_type ON records(memory_type)"
+            )
+            self.conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_records_timestamp ON records(timestamp)"
             )
             self.conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_records_archived ON records(archived)"
@@ -119,7 +141,7 @@ class RecordStore:
     def put(
         self,
         text: str,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[Union[Dict[str, Any], RecordMetadata]] = None,
         embedding: Optional[Union[np.ndarray, Sequence[float]]] = None,
     ) -> tuple[Record, bool]:
         """
@@ -147,16 +169,23 @@ class RecordStore:
         emb_blob = record.embedding.tobytes() if record.embedding is not None else None
         emb_dim = len(record.embedding) if record.embedding is not None else None
 
+        pmeta = record.parsed_metadata
         with self.conn:
             self.conn.execute(
                 """
-                INSERT INTO records (id, text, metadata_json, embedding_blob, embedding_dim, created_at, archived)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO records (
+                    id, text, metadata_json, project, memory_type, timestamp,
+                    embedding_blob, embedding_dim, created_at, archived
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     record.id,
                     record.text,
                     json.dumps(record.metadata),
+                    pmeta.project,
+                    pmeta.memory_type.value,
+                    pmeta.timestamp,
                     emb_blob,
                     emb_dim,
                     record.created_at,
@@ -279,6 +308,56 @@ class RecordStore:
         else:
             cursor = self.conn.execute("SELECT COUNT(*) FROM records WHERE archived = 0")
         return cursor.fetchone()[0]
+
+    def find_by_metadata(
+        self,
+        project: Optional[str] = None,
+        memory_type: Optional[Union[str, MemoryType]] = None,
+        since_timestamp: Optional[float] = None,
+        until_timestamp: Optional[float] = None,
+        include_archived: bool = False,
+    ) -> List[Record]:
+        """
+        Query records filtered by indexed metadata fields.
+        """
+        query = "SELECT id, text, metadata_json, embedding_blob, embedding_dim, created_at, archived FROM records WHERE 1=1"
+        params: List[Any] = []
+
+        if not include_archived:
+            query += " AND archived = 0"
+        if project is not None:
+            query += " AND project = ?"
+            params.append(project)
+        if memory_type is not None:
+            mtype_val = memory_type.value if isinstance(memory_type, MemoryType) else str(memory_type)
+            query += " AND memory_type = ?"
+            params.append(mtype_val)
+        if since_timestamp is not None:
+            query += " AND timestamp >= ?"
+            params.append(since_timestamp)
+        if until_timestamp is not None:
+            query += " AND timestamp <= ?"
+            params.append(until_timestamp)
+
+        query += " ORDER BY timestamp ASC"
+
+        cursor = self.conn.execute(query, params)
+        records: List[Record] = []
+        for row in cursor.fetchall():
+            emb: Optional[np.ndarray] = None
+            if row["embedding_blob"] is not None and row["embedding_dim"] is not None:
+                emb = np.frombuffer(row["embedding_blob"], dtype=np.float32)
+            records.append(
+                Record(
+                    id=row["id"],
+                    text=row["text"],
+                    metadata=json.loads(row["metadata_json"]),
+                    embedding=emb,
+                    created_at=row["created_at"],
+                    archived=bool(row["archived"]),
+                )
+            )
+        return records
 
     def close(self) -> None:
         """Close SQLite connection."""
