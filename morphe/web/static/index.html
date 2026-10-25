@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MORPHE OS 2000 - Adaptive Memory System</title>
+  <!-- 98.css / Y2K Windows Retro Styling -->
+  <link rel="stylesheet" href="https://unpkg.com/98.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #f7d6e0;
+      /* Y2K Pastel Pink & Lavender Grid Background matching user inspo */
+      background-image: 
+        linear-gradient(rgba(179, 136, 235, 0.25) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(179, 136, 235, 0.25) 1px, transparent 1px);
+      background-size: 24px 24px;
+      font-family: "MS Sans Serif", Arial, sans-serif;
+      margin: 0;
+      padding: 12px;
+      overflow-x: hidden;
+      width: 100vw;
+    }
+
+    .desktop {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Fixed 2-column grid bound strictly to viewport width */
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    /* Windows 98 / Y2K Pastel Window Overrides */
+    .window {
+      background: #fae1dd;
+      border: 3px solid #70587c;
+      box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.35);
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .title-bar {
+      background: linear-gradient(90deg, #9b5de5, #f15bb5);
+      padding: 6px 8px;
+    }
+
+    .title-bar-text {
+      font-size: 14px !important;
+      font-weight: bold;
+      color: #ffffff;
+      text-shadow: 1px 1px 1px #000;
+      letter-spacing: 0.5px;
+    }
+
+    .window-body {
+      padding: 12px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      background: #e8dff5;
+      padding: 8px;
+      border: 2px inset #ffffff;
+    }
+
+    /* Graph containers strictly bound */
+    #cy-graph, #cy-diff {
+      width: 100%;
+      max-width: 100%;
+      height: 380px;
+      background: #ffffff;
+      border: 2px inset #9b5de5;
+    }
+
+    .status-bar {
+      margin-top: 8px;
+      background: #d8e2dc;
+      border: 1px solid #70587c;
+    }
+
+    .status-bar-field {
+      font-size: 12px !important;
+      font-weight: bold;
+      color: #333333;
+    }
+
+    .log-box {
+      width: 100%;
+      height: 130px;
+      background: #110e1b;
+      color: #00f5d4;
+      font-family: "Courier New", monospace;
+      font-size: 13px;
+      padding: 8px;
+      box-sizing: border-box;
+      overflow-y: scroll;
+      border: 2px inset #9b5de5;
+    }
+
+    .query-result-box {
+      height: 140px;
+      overflow-y: auto;
+      background: #ffffff;
+      border: 2px inset #9b5de5;
+      padding: 8px;
+      font-size: 13px;
+    }
+
+    .badge-overload { background: #ff4d6d; color: white; padding: 2px 6px; font-weight: bold; font-size: 11px; }
+    .badge-green { background: #06d6a0; color: black; padding: 2px 6px; font-weight: bold; font-size: 11px; }
+    .badge-amber { background: #fee440; color: black; padding: 2px 6px; font-weight: bold; font-size: 11px; }
+
+    .y2k-btn {
+      font-weight: bold;
+      font-size: 12px;
+      cursor: pointer;
+      background: #f8edeb;
+      border: 2px outset #ffffff;
+      padding: 3px 8px;
+    }
+
+    .y2k-btn:active {
+      border: 2px inset #000000;
+    }
+
+    .section-header {
+      font-size: 14px;
+      font-weight: bold;
+      color: #4a0e4e;
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="desktop">
+
+  <!-- TOP BANNER WINDOW -->
+  <div class="window">
+    <div class="title-bar">
+      <div class="title-bar-text">&#128190; MORPHE_CORE.EXE - Memory-Oriented Reconfigurable Plasticity (Y2K Edition)</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize"></button>
+        <button aria-label="Maximize"></button>
+        <button aria-label="Close"></button>
+      </div>
+    </div>
+    <div class="window-body">
+      <div class="toolbar">
+        <strong style="font-size:13px; color:#4a0e4e;">[1. Upload Chat PDF]:</strong>
+        <input type="file" id="pdf-input" accept="application/pdf,.txt,.md" style="font-size:12px;" />
+        <button class="y2k-btn" onclick="uploadPDF()">Ingest PDF</button>
+
+        <span style="border-left: 2px groove #b388eb; height: 24px; margin: 0 6px;"></span>
+
+        <strong style="font-size:13px; color:#4a0e4e;">[2. RL Adaptation Cycle]:</strong>
+        <button class="y2k-btn" style="color: #0033aa;" onclick="runAdaptationCycle()">Run Adaptation Cycle</button>
+        <button class="y2k-btn" style="color: #cc0000;" onclick="triggerBreakIt()">BREAK IT (Auto-Reject Demo)</button>
+
+        <span style="border-left: 2px groove #b388eb; height: 24px; margin: 0 6px;"></span>
+
+        <strong style="font-size:13px;">Active Head:</strong>
+        <span id="head-version-display" style="font-weight:bold; color: #7209b7; font-size:13px;">None</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN DUAL VIEW GRID (BOUNDED VIEWPORT) -->
+  <div class="main-grid">
+
+    <!-- WINDOW 1: LIVE GRAPH TOPOLOGY -->
+    <div class="window">
+      <div class="title-bar">
+        <div class="title-bar-text">&#127760; Live Architecture Topology (Cytoscape Graph View)</div>
+        <div class="title-bar-controls">
+          <button aria-label="Help"></button>
+        </div>
+      </div>
+      <div class="window-body">
+        <div class="section-header">Current Memory Graph Nodes & Inter-Module Pathways</div>
+        <div style="font-size: 12px; margin-bottom: 6px;">
+          Legend: <span class="badge-overload">Red: Overloaded</span> | <span style="background:#a0c4ff; padding:2px 6px; font-weight:bold;">Blue: Balanced</span> | <span class="badge-amber">Yellow: Shortcut</span> | <span style="background:#8338ec; color:#fff; padding:2px 6px; font-weight:bold;">Purple: Supersedes</span>
+        </div>
+        <div id="cy-graph"></div>
+        <div class="status-bar">
+          <p class="status-bar-field" id="graph-stats">Modules: 0 | Edges: 0</p>
+          <p class="status-bar-field" id="selected-node-info">Click any module node to inspect charter</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- WINDOW 2: VISUAL DELTA GRAPH (DIFF VIEW) -->
+    <div class="window">
+      <div class="title-bar">
+        <div class="title-bar-text">&#128260; Visual Delta Graph (Cytoscape Diff View - Vn vs Vn+1)</div>
+        <div class="title-bar-controls">
+          <button aria-label="Help"></button>
+        </div>
+      </div>
+      <div class="window-body">
+        <div class="section-header">Structural Mutation Comparison (Delta Highlight)</div>
+        <div style="font-size: 12px; margin-bottom: 6px;">
+          Delta Legend: <span class="badge-green">Green: Split / Shortcut</span> | <span class="badge-overload">Red: Pruned / Merged</span> | <span class="badge-amber">Amber: Adjusted</span>
+        </div>
+        <div id="cy-diff"></div>
+        <div class="status-bar">
+          <p class="status-bar-field" id="diff-summary">Select versions in ledger below to compare</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- QUERY & TIME-TRAVEL COMMIT TREE GRID -->
+  <div class="main-grid">
+
+    <!-- WINDOW 3: RETRIEVAL & QUERY INSPECTOR -->
+    <div class="window">
+      <div class="title-bar">
+        <div class="title-bar-text">&#128269; Query Search & Temporal Memory Inspector</div>
+      </div>
+      <div class="window-body">
+        <div class="section-header">Ask Your Stored Knowledge (Current vs. Historical)</div>
+        <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+          <input type="text" id="query-input" placeholder="e.g. 'What did the user say about the 4 hour time constraint?' or 'What do we use now?'" style="flex:1; font-size:12px; padding:4px;" />
+          <button class="y2k-btn" onclick="executeSearch()">Search Memory</button>
+        </div>
+        <div class="query-result-box" id="query-results">
+          <i>Enter a query above to test memory recall without sliding-window amnesia...</i>
+        </div>
+      </div>
+    </div>
+
+    <!-- WINDOW 4: COMMIT HISTORY TREE & ROLLBACK SLIDER -->
+    <div class="window">
+      <div class="title-bar">
+        <div class="title-bar-text">&#127795; Git-Style Ledger Tree & Time-Travel Rollback</div>
+      </div>
+      <div class="window-body">
+        <div class="section-header">Immutable CAS Commit History & Version Lineage</div>
+        <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 8px;">
+          <label><strong style="font-size:12px;">Version:</strong></label>
+          <select id="version-select" style="flex:1; font-size:12px; padding:3px;" onchange="handleVersionChange()"></select>
+          <button class="y2k-btn" onclick="executeRollback()">Rollback to Version</button>
+        </div>
+        <div class="query-result-box" id="version-details">
+          <i>Commit history tree loaded from SQLite ledger...</i>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SYSTEM LOG CONSOLE -->
+  <div class="window">
+    <div class="title-bar">
+      <div class="title-bar-text">&#128187; TELEMETRY_LOG.TXT - Pipeline Execution Terminal</div>
+    </div>
+    <div class="window-body">
+      <div class="log-box" id="log-terminal">
+[MORPHE OS 2000 Initialized] Waiting for chat history PDF upload...
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let cyGraph = null;
+  let cyDiff = null;
+
+  function appendLog(msg) {
+    const term = document.getElementById("log-terminal");
+    const ts = new Date().toLocaleTimeString();
+    term.innerHTML += `\n[${ts}] ${msg}`;
+    term.scrollTop = term.scrollHeight;
+  }
+
+  function initCytoscape() {
+    cyGraph = cytoscape({
+      container: document.getElementById('cy-graph'),
+      style: [
+        {
+          selector: 'node',
+          style: {
+            'background-color': 'data(color)',
+            'label': 'data(label)',
+            'font-size': '11px',
+            'font-weight': 'bold',
+            'font-family': 'MS Sans Serif, Arial, sans-serif',
+            'text-wrap': 'wrap',
+            'width': 'data(size)',
+            'height': 'data(size)',
+            'border-width': 2,
+            'border-color': '#4a0e4e',
+            'text-valign': 'center',
+            'text-halign': 'center'
+          }
+        },
+        {
+          selector: 'edge',
+          style: {
+            'width': 3,
+            'line-color': 'data(color)',
+            'target-arrow-color': 'data(color)',
+            'target-arrow-shape': 'triangle',
+            'curve-style': 'bezier',
+            'label': 'data(edge_type)',
+            'font-size': '9px',
+            'font-weight': 'bold'
+          }
+        }
+      ],
+      layout: { name: 'cose', animate: false }
+    });
+
+    cyGraph.on('tap', 'node', function(evt){
+      const node = evt.target;
+      document.getElementById("selected-node-info").innerText = 
+        `Selected: ${node.data('id')} | Charter: ${node.data('charter')}`;
+    });
+
+    cyDiff = cytoscape({
+      container: document.getElementById('cy-diff'),
+      style: [
+        {
+          selector: 'node',
+          style: {
+            'background-color': 'data(color)',
+            'label': 'data(label)',
+            'font-size': '11px',
+            'font-weight': 'bold',
+            'width': 50,
+            'height': 50,
+            'border-width': 2,
+            'border-color': '#000',
+            'text-valign': 'center',
+            'text-halign': 'center'
+          }
+        },
+        {
+          selector: 'edge',
+          style: {
+            'width': 3,
+            'line-color': 'data(color)',
+            'target-arrow-color': 'data(color)',
+            'target-arrow-shape': 'triangle',
+            'label': 'data(label)',
+            'font-size': '9px',
+            'font-weight': 'bold'
+          }
+        }
+      ],
+      layout: { name: 'circle', animate: false }
+    });
+  }
+
+  async function refreshGraph() {
+    try {
+      const res = await fetch('/api/graph');
+      const data = await res.json();
+      document.getElementById("head-version-display").innerText = data.head_version || "Root";
+      document.getElementById("graph-stats").innerText = `Modules: ${data.total_modules} | Edges: ${data.total_edges}`;
+
+      cyGraph.elements().remove();
+      cyGraph.add(data.elements);
+      cyGraph.layout({ name: 'cose', animate: false }).run();
+      await refreshVersions();
+    } catch(err) {
+      appendLog("Error refreshing graph: " + err.message);
+    }
+  }
+
+  async function refreshVersions() {
+    try {
+      const res = await fetch('/api/versions');
+      const data = await res.json();
+      const sel = document.getElementById("version-select");
+      sel.innerHTML = "";
+
+      const detailsBox = document.getElementById("version-details");
+      detailsBox.innerHTML = "";
+
+      data.versions.forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v.version_id;
+        opt.text = `${v.version_id} - ${v.reason_card.substring(0, 45)}...`;
+        if (v.is_head) opt.selected = true;
+        sel.appendChild(opt);
+
+        detailsBox.innerHTML += `
+          <div style="border-bottom: 1px dotted #b388eb; padding: 4px 0;">
+            <strong>${v.version_id}</strong> ${v.is_head ? '<span class="badge-green">HEAD</span>' : ''}
+            <div>${v.reason_card}</div>
+            <div style="color:#555; font-size:11px;">Parent: ${v.parent_version || 'None'} | Modules: ${v.module_count} | Edges: ${v.edge_count}</div>
+          </div>
+        `;
+      });
+
+      if (data.versions.length >= 2) {
+        const v1 = data.versions[data.versions.length - 2].version_id;
+        const v2 = data.versions[data.versions.length - 1].version_id;
+        loadDiffView(v1, v2);
+      }
+    } catch(err) {
+      appendLog("Error loading versions: " + err);
+    }
+  }
+
+  async function loadDiffView(v1, v2) {
+    try {
+      const res = await fetch(`/api/diff?v1=${v1}&v2=${v2}`);
+      const data = await res.json();
+      document.getElementById("diff-summary").innerText = `Diff (${v1} -> ${v2}): ${data.summary}`;
+      cyDiff.elements().remove();
+      cyDiff.add(data.elements);
+      cyDiff.layout({ name: 'circle', animate: false }).run();
+    } catch(err) {
+      console.log("Diff view skipped:", err);
+    }
+  }
+
+  async function uploadPDF() {
+    const input = document.getElementById('pdf-input');
+    if (!input.files || input.files.length === 0) {
+      alert("Please select a chat PDF file first!");
+      return;
+    }
+
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+
+    appendLog(`Uploading and ingesting '${file.name}' into content-addressed memory...`);
+
+    try {
+      const res = await fetch('/api/ingest-pdf', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (res.ok) {
+        appendLog(`[Ingestion Complete] Parsed ${data.turns_parsed} turns | Stored ${data.records_stored} records into ${data.modules_created.length} modules!`);
+        appendLog(`Temporal supersession detected: ${data.superseded_detected}`);
+        await refreshGraph();
+      } else {
+        appendLog(`[Ingestion Error]: ${data.detail}`);
+      }
+    } catch (err) {
+      appendLog(`Failed to upload: ${err.message}`);
+    }
+  }
+
+  async function executeSearch() {
+    const q = document.getElementById("query-input").value;
+    if (!q) return;
+
+    appendLog(`Querying memory: "${q}"`);
+    try {
+      const res = await fetch('/api/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q, top_k: 3 })
+      });
+      const data = await res.json();
+      const container = document.getElementById("query-results");
+      container.innerHTML = "";
+
+      if (data.hits.length === 0) {
+        container.innerHTML = "<i>No matching records retrieved.</i>";
+        return;
+      }
+
+      data.hits.forEach((h, idx) => {
+        container.innerHTML += `
+          <div style="border-bottom: 1px dotted #b388eb; padding: 4px 0;">
+            <strong>#${idx+1} [Module: ${h.module}] (Score: ${h.score})</strong>
+            ${h.archived ? '<span class="badge-overload" style="font-size:9px;">ARCHIVED / HISTORICAL</span>' : ''}
+            <div>"${h.text}"</div>
+          </div>
+        `;
+      });
+      appendLog(`Retrieved ${data.hits.length} records for query.`);
+    } catch(err) {
+      appendLog("Query error: " + err.message);
+    }
+  }
+
+  async function runAdaptationCycle() {
+    appendLog("Running autonomous RL adaptation cycle (Weakness Scan -> Sandbox Trial -> Reward -> Gate)...");
+    try {
+      const res = await fetch('/api/adapt/step', { method: 'POST' });
+      const data = await res.json();
+      appendLog(`[RL Adaptation Result]: Status: ${data.status.toUpperCase()} | Action: ${data.action} | Reward: ${data.reward}`);
+      if (data.status === "committed") {
+        appendLog(`-> Committed Version: ${data.version_id}`);
+        appendLog(`-> Reason Card: ${data.reason_card}`);
+        await refreshGraph();
+      }
+    } catch(err) {
+      appendLog("Adaptation error: " + err.message);
+    }
+  }
+
+  async function triggerBreakIt() {
+    appendLog("Injecting deliberately bad mutation (BREAK IT DEMO)...");
+    try {
+      const res = await fetch('/api/break-it', { method: 'POST' });
+      const data = await res.json();
+      appendLog(`[BREAK IT OUTCOME]: ${data.message}`);
+      appendLog(`-> Negative Reward: ${data.reward} (Failed threshold)`);
+      appendLog(`-> Active HEAD preserved: ${data.head_version_preserved}`);
+    } catch(err) {
+      appendLog("Break it error: " + err.message);
+    }
+  }
+
+  async function executeRollback() {
+    const sel = document.getElementById("version-select");
+    const v = sel.value;
+    if (!v) return;
+
+    appendLog(`Rolling back topology to Version: ${v}...`);
+    try {
+      const res = await fetch('/api/rollback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ version_id: v })
+      });
+      const data = await res.json();
+      appendLog(`[Rollback Successful] Active HEAD is now: ${data.active_version}`);
+      await refreshGraph();
+    } catch(err) {
+      appendLog("Rollback error: " + err.message);
+    }
+  }
+
+  function handleVersionChange() {
+    const sel = document.getElementById("version-select");
+    appendLog(`Selected version in tree: ${sel.value}`);
+  }
+
+  window.onload = function() {
+    initCytoscape();
+    refreshGraph();
+  };
+</script>
+
+</body>
+</html>

@@ -155,6 +155,8 @@ class MorpheBackend:
             return False
 
         elif mtype == MutationType.UPDATE_EDGE_WEIGHT:
+            if action.metadata and action.metadata.get("do_nothing"):
+                return True
             key = (action.source_module, action.target_module)
             if key in self._staged_edges and action.weight is not None:
                 old = self._staged_edges[key]
