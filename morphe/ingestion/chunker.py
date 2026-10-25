@@ -19,7 +19,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 def sentence_split(text: str) -> List[str]:
     """
     Split text into clean, trimmed sentences preserving readability.
-    Handles standard punctuation (. ! ?) with abbreviations/decimals avoided.
+    Protects abbreviations (e.g. Dr., Mr., U.S.A., Jan., etc.) and decimal numbers.
     """
     if not text or not text.strip():
         return []
@@ -28,18 +28,44 @@ def sentence_split(text: str) -> List[str]:
     paragraphs = re.split(r'\n{2,}', text.strip())
     sentences: List[str] = []
 
-    # Regex pattern to split sentences inside each paragraph
-    pattern = r'(?<=[.!?])\s+(?=[A-Z0-9"\'])'
+    # Known common abbreviations to protect
+    abbrevs = [
+        "mr.", "mrs.", "ms.", "dr.", "prof.", "sr.", "jr.", "vs.", "etc.",
+        "u.s.a.", "u.s.", "e.g.", "i.e.", "jan.", "feb.", "mar.", "apr.",
+        "jun.", "jul.", "aug.", "sep.", "sept.", "oct.", "nov.", "dec."
+    ]
 
     for para in paragraphs:
         para_clean = para.strip()
         if not para_clean:
             continue
-        raw_parts = re.split(pattern, para_clean)
+
+        # Protect abbreviations and decimal dots with a placeholder
+        protected = para_clean
+        # Protect decimals like 3.14159 or 10.5
+        protected = re.sub(r'(?<=\d)\.(?=\d)', '___DECIMAL_DOT___', protected)
+        
+        # Protect common abbreviations case-insensitively
+        for abb in abbrevs:
+            clean_abb = abb.replace(".", r"\.")
+            protected = re.sub(
+                r'\b' + clean_abb,
+                lambda m: m.group(0).replace(".", "___ABBREV_DOT___"),
+                protected,
+                flags=re.IGNORECASE,
+            )
+
+        # Regex pattern to split sentences on remaining real sentence terminals
+        pattern = r'(?<=[.!?])\s+(?=[A-Z0-9"\'])'
+        raw_parts = re.split(pattern, protected)
+
         for part in raw_parts:
-            part_clean = part.strip()
+            # Restore protected dots
+            part_restored = part.replace("___DECIMAL_DOT___", ".").replace("___ABBREV_DOT___", ".")
+            part_clean = part_restored.strip()
             if part_clean:
                 sentences.append(part_clean)
+
     return sentences
 
 
