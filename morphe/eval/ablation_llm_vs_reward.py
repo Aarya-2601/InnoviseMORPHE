@@ -169,3 +169,24 @@ class LLMvsRewardAblation:
             ),
             "samples": [s.__dict__ for s in samples],
         }
+
+
+if __name__ == "__main__":
+    print("\n" + "=" * 80)
+    print("  MORPHE: LLM-as-Judge vs. Verifiable Factual Reward Ablation (Section 12)")
+    print("  Evaluating LLM Self-Approval Bias vs. Ground-Truth Acceptance")
+    print("=" * 80 + "\n")
+    ablation = LLMvsRewardAblation()
+    res = ablation.run_ablation(num_trials=4)
+
+    print(f"  Total Mutations Evaluated: {res['total_mutations_tested']}")
+    print("-" * 80)
+    print(f"{'Metric':<40} | {'Rate':<15}")
+    print("-" * 80)
+    print(f"{'LLM Approval Rate (Gemma 4)':<40} | {res['llm_approval_rate']*100:<14.1f}%")
+    print(f"{'Factual Ground-Truth Approval Rate':<40} | {res['factual_ground_truth_approval_rate']*100:<14.1f}%")
+    print(f"{'LLM False-Approval Rate (Bias Error)':<40} | {res['llm_false_approval_rate']*100:<14.1f}%")
+    print("-" * 80)
+    print(f"  Conclusion: {res['conclusion']}")
+    print("=" * 80 + "\n")
+

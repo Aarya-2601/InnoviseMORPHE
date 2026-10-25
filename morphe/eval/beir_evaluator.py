@@ -313,3 +313,34 @@ class BEIRSciFactEvaluator:
                 "delta_latency_p50": round(metrics_after_adapt["p50_latency_ms"] - metrics_before_adapt["p50_latency_ms"], 2),
             }
         }
+
+
+if __name__ == "__main__":
+    print("\n" + "=" * 80)
+    print("  BEIR SciFact Comparative Benchmark Evaluation for MORPHE (PS 3)")
+    print("=" * 80 + "\n")
+    evaluator = BEIRSciFactEvaluator(sample_doc_limit=497, sample_query_limit=50)
+    results = evaluator.run_full_benchmark()
+
+    print("\n" + "-" * 80)
+    print(f"  Benchmark Dataset: {results['dataset']} ({results['total_documents_ingested']} docs, {results['total_queries_tested']} queries)")
+    print("-" * 80)
+    print(f"{'Metric':<22} | {'Flat Baseline':<16} | {'Static Modular':<16} | {'MORPHE Adapted':<16}")
+    print("-" * 80)
+    flat = results["baselines"]["Flat_Baseline"]
+    static = results["baselines"]["Static_Modular_Graph"]
+    morphe = results["baselines"]["MORPHE_Adapted_Graph"]
+
+    print(f"{'Recall@1':<22} | {flat['recall_at_1']*100:<15.1f}% | {static['recall_at_1']*100:<15.1f}% | {morphe['recall_at_1']*100:<15.1f}%")
+    print(f"{'Recall@5':<22} | {flat['recall_at_5']*100:<15.1f}% | {static['recall_at_5']*100:<15.1f}% | {morphe['recall_at_5']*100:<15.1f}%")
+    print(f"{'Recall@10':<22} | {flat['recall_at_10']*100:<15.1f}% | {static['recall_at_10']*100:<15.1f}% | {morphe['recall_at_10']*100:<15.1f}%")
+    print(f"{'MRR':<22} | {flat['mrr']:<16.3f} | {static['mrr']:<16.3f} | {morphe['mrr']:<16.3f}")
+    print(f"{'p50 Latency (ms)':<22} | {flat['p50_latency_ms']:<16.1f} | {static['p50_latency_ms']:<16.1f} | {morphe['p50_latency_ms']:<16.1f}")
+    print(f"{'p95 Latency (ms)':<22} | {flat['p95_latency_ms']:<16.1f} | {static['p95_latency_ms']:<16.1f} | {morphe['p95_latency_ms']:<16.1f}")
+    print(f"{'Avg Modules Touched':<22} | {'All (Corpus)':<16} | {static['avg_modules_touched']:<16.1f} | {morphe['avg_modules_touched']:<16.1f}")
+    print("-" * 80)
+    print(f"  Adaptation Proposal: {results['adaptation_cycle']['mutation_proposed']['action_type'].upper()} on {results['adaptation_cycle']['mutation_proposed']['target_modules']}")
+    print(f"  VoI Evaluation Gate: Tier {results['adaptation_cycle']['tier_reached']} | Compute Saved: {results['adaptation_cycle']['compute_saved_score']*100:.0f}% | Accepted: {results['adaptation_cycle']['accepted']}")
+    print(f"  Decision Invariant : {results['adaptation_cycle']['reason']}")
+    print("=" * 80 + "\n")
+

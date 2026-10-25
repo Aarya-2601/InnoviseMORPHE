@@ -137,3 +137,27 @@ class PolicyTransferBenchmark:
                 "transfer_advantage_confirmed": warm_bandit.cumulative_regret <= cold_bandit.cumulative_regret,
             }
         }
+
+
+if __name__ == "__main__":
+    print("\n" + "=" * 80)
+    print("  MORPHE: Contextual Bandit Policy Transfer Benchmark (Section 10A.4)")
+    print("  Claim: 'The Architect learned how to restructure across domains'")
+    print("=" * 80 + "\n")
+    benchmark = PolicyTransferBenchmark(random_seed=42)
+    res = benchmark.evaluate_transfer(test_cycles=6)
+
+    print(f"  Test Cycles Evaluated: {res['test_cycles']}")
+    print("-" * 80)
+    print(f"{'Condition':<25} | {'Wasted Trials (Rejections)':<26} | {'Cumulative Regret':<18} | {'Avg Reward':<12}")
+    print("-" * 80)
+    c = res["cold_start"]
+    w = res["warm_start"]
+    print(f"{'Cold Start (Tabula Rasa)':<25} | {c['wasted_trials']:<26} | {c['cumulative_regret']:<18.4f} | {c['avg_reward']:<12.4f}")
+    print(f"{'Warm Start (Pre-trained)':<25} | {w['wasted_trials']:<26} | {w['cumulative_regret']:<18.4f} | {w['avg_reward']:<12.4f}")
+    print("-" * 80)
+    print(f"  Wasted Trials Saved       : {res['metrics']['wasted_trials_saved']}")
+    print(f"  Cumulative Regret Reduction: {res['metrics']['regret_reduction_percentage']:.1f}%")
+    print(f"  Transfer Advantage Verdict : {'CONFIRMED (Warm > Cold)' if res['metrics']['transfer_advantage_confirmed'] else 'INCONCLUSIVE'}")
+    print("=" * 80 + "\n")
+
