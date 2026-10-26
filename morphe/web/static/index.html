@@ -2,23 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>MORPHE CYBERPUNK // Neural Adaptive Memory Graph 3D</title>
+  <title>MORPHE 2000 // Autonomous Neural Memory & Topology OS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <!-- 3D Force Graph & Three.js via CDN -->
   <script src="https://unpkg.com/3d-force-graph"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Cytoscape.js for Topological Delta Diff View -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.26.0/cytoscape.min.js"></script>
+
+  <!-- Google Fonts: Retro / Y2K & Clean Monospace -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --neon-cyan: #00f3ff;
-      --neon-pink: #ff007f;
-      --neon-purple: #9d4edd;
-      --neon-yellow: #ffe600;
-      --neon-green: #00ff66;
-      --bg-dark: #070913;
-      --panel-bg: rgba(13, 17, 33, 0.85);
-      --border-cyan: rgba(0, 243, 255, 0.4);
-      --border-pink: rgba(255, 0, 127, 0.4);
+      --bg-lavender: #f3e8ff;
+      --bg-pink: #fdf2f8;
+      --grid-line: rgba(168, 85, 247, 0.16);
+      --win-border: #1e1b4b;
+      --win-shadow: 4px 4px 0px #1e1b4b;
+      --title-purple: #a78bfa;
+      --title-purple-dark: #7c3aed;
+      --title-mint: #2dd4bf;
+      --title-pink: #f472b6;
+      --btn-bg: #ffffff;
+      --btn-hover: #fae8ff;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --accent-amber: #f59e0b;
     }
 
     * {
@@ -28,425 +43,1142 @@
     }
 
     body {
-      background: var(--bg-dark);
-      color: #e0e6ed;
-      font-family: 'Rajdhani', sans-serif;
+      background-color: var(--bg-lavender);
+      background-image: 
+        linear-gradient(135deg, #ede9fe 0%, #fdf2f8 50%, #f5f3ff 100%),
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: 100% 100%, 26px 26px, 26px 26px;
+      color: var(--text-dark);
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
       min-height: 100vh;
       overflow-x: hidden;
-      background-image: 
-        radial-gradient(circle at 15% 50%, rgba(157, 78, 221, 0.15), transparent 40%),
-        radial-gradient(circle at 85% 30%, rgba(0, 243, 255, 0.12), transparent 45%),
-        linear-gradient(rgba(0, 243, 255, 0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 243, 255, 0.04) 1px, transparent 1px);
-      background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+      padding-bottom: 60px;
     }
 
-    /* Scanline effect */
-    body::before {
-      content: " ";
-      display: block;
-      position: fixed;
-      top: 0; left: 0; bottom: 0; right: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-      background-size: 100% 4px;
-      z-index: 999;
-      pointer-events: none;
-      opacity: 0.6;
-    }
-
-    /* TOP CYBER BAR */
-    header {
-      padding: 18px 28px;
+    /* TOP RETRO OS MENU BAR */
+    .top-os-bar {
+      background: #fdf4ff;
+      border-bottom: 2.5px solid var(--win-border);
+      padding: 8px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(7, 9, 19, 0.95);
-      border-bottom: 2px solid var(--neon-cyan);
-      box-shadow: 0 0 25px rgba(0, 243, 255, 0.3);
+      box-shadow: 0 2px 0px rgba(30, 27, 75, 0.1);
       position: sticky;
       top: 0;
-      z-index: 100;
-      backdrop-filter: blur(10px);
+      z-index: 1000;
     }
 
-    .brand {
+    .top-os-brand {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
     }
 
-    .brand h1 {
-      font-family: 'Orbitron', sans-serif;
+    .top-os-logo {
+      background: var(--title-purple);
+      color: #fff;
+      font-family: 'VT323', monospace;
       font-size: 26px;
-      font-weight: 900;
-      letter-spacing: 3px;
-      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+      padding: 2px 10px;
+      border: 2px solid var(--win-border);
+      box-shadow: 2px 2px 0px var(--win-border);
+      letter-spacing: 1px;
     }
 
-    .badge-core {
-      font-family: 'Fira Code', monospace;
-      font-size: 11px;
-      padding: 4px 10px;
-      border: 1px solid var(--neon-cyan);
-      color: var(--neon-cyan);
-      background: rgba(0, 243, 255, 0.1);
-      box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
-      text-transform: uppercase;
+    .top-os-title {
+      font-weight: 800;
+      font-size: 17px;
+      color: #3b0764;
+      letter-spacing: -0.2px;
     }
 
-    .head-badge {
-      font-family: 'Fira Code', monospace;
-      color: var(--neon-yellow);
-      font-size: 14px;
-      background: rgba(255, 230, 0, 0.1);
-      border: 1px solid var(--neon-yellow);
-      padding: 5px 12px;
-      box-shadow: 0 0 10px rgba(255, 230, 0, 0.2);
-    }
-
-    .container {
-      max-width: 1600px;
-      margin: 20px auto;
-      padding: 0 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 22px;
-    }
-
-    /* CONTROL TOOLBAR */
-    .cyber-toolbar {
-      background: var(--panel-bg);
-      border: 1px solid var(--border-cyan);
-      padding: 16px 20px;
-      border-radius: 4px;
+    .top-os-decorations {
       display: flex;
       align-items: center;
       gap: 16px;
-      flex-wrap: wrap;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    }
-
-    .cyber-btn {
-      font-family: 'Orbitron', sans-serif;
+      font-family: 'Fira Code', monospace;
       font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      padding: 10px 18px;
-      cursor: pointer;
-      text-transform: uppercase;
-      border: 1px solid;
-      background: transparent;
-      transition: all 0.25s ease;
-      position: relative;
-      overflow: hidden;
     }
 
-    .cyber-btn-cyan {
-      border-color: var(--neon-cyan);
-      color: var(--neon-cyan);
-      box-shadow: 0 0 12px rgba(0, 243, 255, 0.25);
-    }
-    .cyber-btn-cyan:hover {
-      background: var(--neon-cyan);
-      color: #000;
-      box-shadow: 0 0 25px rgba(0, 243, 255, 0.8);
-      transform: translateY(-2px);
-    }
-
-    .cyber-btn-pink {
-      border-color: var(--neon-pink);
-      color: var(--neon-pink);
-      box-shadow: 0 0 12px rgba(255, 0, 127, 0.25);
-    }
-    .cyber-btn-pink:hover {
-      background: var(--neon-pink);
-      color: #fff;
-      box-shadow: 0 0 25px rgba(255, 0, 127, 0.8);
-      transform: translateY(-2px);
-    }
-
-    .cyber-btn-red {
-      border-color: #ff3333;
-      color: #ff3333;
-      box-shadow: 0 0 12px rgba(255, 51, 51, 0.25);
-    }
-    .cyber-btn-red:hover {
-      background: #ff3333;
-      color: #fff;
-      box-shadow: 0 0 25px rgba(255, 51, 51, 0.8);
-    }
-
-    /* 3D GRAPH & HUD SECTION */
-    .viewport-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 20px;
-      min-height: 520px;
-    }
-
-    .panel {
-      background: var(--panel-bg);
-      border: 1px solid var(--border-cyan);
+    .retro-badge {
+      background: #ffffff;
+      border: 1.5px solid var(--win-border);
+      box-shadow: 2px 2px 0px var(--win-border);
+      padding: 4px 10px;
       border-radius: 4px;
-      padding: 16px;
+      font-weight: 700;
+      font-size: 11px;
+      color: #4c1d95;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* RETRO DESKTOP FLOATING STICKERS */
+    .desktop-stickers {
+      position: fixed;
+      top: 60px;
+      right: 20px;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      gap: 16px;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .sticker-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-family: 'VT323', monospace;
+      font-size: 16px;
+      color: #4c1d95;
+      background: rgba(255, 255, 255, 0.85);
+      border: 2px solid var(--win-border);
+      box-shadow: 3px 3px 0px var(--win-border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      pointer-events: auto;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .sticker-item:hover {
+      transform: scale(1.06);
+    }
+
+    /* MAIN CONTAINER - FIXED TO VIEWPORT, NO INFINITE STRETCH */
+    .container {
+      max-width: 1400px;
+      width: 95vw;
+      margin: 24px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
       position: relative;
+      z-index: 10;
     }
 
-    .panel::after {
-      content: "";
-      position: absolute;
-      top: -1px; left: -1px;
-      width: 12px; height: 12px;
-      border-top: 3px solid var(--neon-cyan);
-      border-left: 3px solid var(--neon-cyan);
+    /* Y2K RETRO WINDOW COMPONENT */
+    .y2k-window {
+      background: #ffffff;
+      border: 2.5px solid var(--win-border);
+      box-shadow: var(--win-shadow);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
-    .panel-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      color: var(--neon-cyan);
-      margin-bottom: 12px;
+    .y2k-titlebar {
+      background: linear-gradient(90deg, #a78bfa 0%, #c084fc 100%);
+      border-bottom: 2.5px solid var(--win-border);
+      padding: 8px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+      user-select: none;
+    }
+
+    .y2k-titlebar.mint-bar {
+      background: linear-gradient(90deg, #2dd4bf 0%, #5eead4 100%);
+    }
+
+    .y2k-titlebar.pink-bar {
+      background: linear-gradient(90deg, #f472b6 0%, #fb7185 100%);
+    }
+
+    .y2k-window-title {
+      font-weight: 800;
+      font-size: 15px;
+      color: #1e1b4b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.3px;
+    }
+
+    .y2k-window-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #ffffff;
+      border: 2px solid var(--win-border);
+      box-shadow: 1.5px 1.5px 0px var(--win-border);
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    .y2k-ctrl-btn {
+      width: 17px;
+      height: 17px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      font-family: monospace;
+      font-size: 12px;
+      font-weight: 900;
+      color: #1e1b4b;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .y2k-content {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #fffbfa;
+    }
+
+    /* LARGE HIGH-CONTRAST HEADINGS */
+    .section-headline {
+      font-size: 20px;
+      font-weight: 800;
+      color: #1e1b4b;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 2px solid rgba(30, 27, 75, 0.08);
       padding-bottom: 8px;
     }
 
+    .section-subtitle {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    /* RETRO BUTTONS (BEVELLED WITH CRISP SHADOW) */
+    .retro-btn {
+      background: #ffffff;
+      color: var(--win-border);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 8px 16px;
+      border: 2px solid var(--win-border);
+      box-shadow: 3px 3px 0px var(--win-border);
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.06s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .retro-btn:hover {
+      background: var(--btn-hover);
+      box-shadow: 4px 4px 0px var(--win-border);
+    }
+
+    .retro-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px var(--win-border);
+    }
+
+    .retro-btn-purple {
+      background: #ede9fe;
+    }
+    .retro-btn-mint {
+      background: #ccfbf1;
+    }
+    .retro-btn-pink {
+      background: #fce7f3;
+    }
+    .retro-btn-red {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    /* TAB SWITCHER */
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      border-bottom: 2.5px solid var(--win-border);
+      padding-bottom: 6px;
+      margin-bottom: 10px;
+    }
+
+    .tab-btn {
+      font-weight: 800;
+      font-size: 13px;
+      padding: 6px 14px;
+      border: 2px solid var(--win-border);
+      box-shadow: 2.5px 2.5px 0px var(--win-border);
+      border-radius: 4px;
+      background: #ffffff;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+
+    .tab-btn.active {
+      background: #a78bfa;
+      color: #ffffff;
+      box-shadow: 3px 3px 0px var(--win-border);
+    }
+
+    /* INPUTS & TEXTAREAS */
+    .retro-input {
+      width: 100%;
+      background: #ffffff;
+      border: 2px solid var(--win-border);
+      box-shadow: inset 2px 2px 0px rgba(30, 27, 75, 0.08);
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      color: var(--text-dark);
+      outline: none;
+    }
+    .retro-input:focus {
+      border-color: var(--title-purple-dark);
+      background: #faf5ff;
+    }
+
+    /* GRAPH CANVASES */
     #3d-graph-container {
       width: 100%;
       height: 480px;
-      background: #02040a;
-      border: 1px solid rgba(0, 243, 255, 0.2);
+      background: #0f172a;
+      border: 2px solid var(--win-border);
       border-radius: 4px;
+      overflow: hidden;
       position: relative;
     }
 
-    /* 7-STAGE LIVE ENGINE WORKFLOW PIPELINE */
-    .stages-container {
+    #cytoscape-diff-container {
+      width: 100%;
+      height: 480px;
+      background: #f8fafc;
+      border: 2px solid var(--win-border);
+      border-radius: 4px;
+      overflow: hidden;
+      display: none;
+      background-image: 
+        linear-gradient(to right, rgba(203, 213, 225, 0.4) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(203, 213, 225, 0.4) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    /* VISUAL DELTA DIFF CONTROLS & SIDE-BY-SIDE METRICS */
+    .diff-controls-panel {
+      background: #fdf4ff;
+      border: 2px solid var(--win-border);
+      box-shadow: 3px 3px 0px var(--win-border);
+      border-radius: 4px;
+      padding: 14px 18px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      height: 480px;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .retro-slider {
+      flex: 1;
+      height: 12px;
+      background: #e2e8f0;
+      border: 2px solid var(--win-border);
+      border-radius: 6px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* SIDE-BY-SIDE METRIC DELTAS FROM IMAGE 1 */
+    .metric-deltas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-delta-card {
+      background: #ffffff;
+      border: 2px solid var(--win-border);
+      box-shadow: 2px 2px 0px var(--win-border);
+      border-radius: 4px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .metric-values {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .metric-val-new {
+      font-size: 18px;
+      font-weight: 900;
+      font-family: 'Fira Code', monospace;
+      color: #1e1b4b;
+    }
+
+    .metric-badge {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 3px;
+      border: 1.5px solid;
+    }
+
+    .metric-badge.positive {
+      background: #ecfdf5;
+      color: #065f46;
+      border-color: #059669;
+    }
+
+    .metric-badge.negative {
+      background: #fef2f2;
+      color: #991b1b;
+      border-color: #dc2626;
+    }
+
+    .metric-badge.neutral {
+      background: #f1f5f9;
+      color: #475569;
+      border-color: #94a3b8;
+    }
+
+    /* CYTOSCAPE DELTA LEGEND */
+    .diff-legend {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+      background: #ffffff;
+      border: 1.5px solid var(--win-border);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1.5px solid #000;
+    }
+
+    /* MODULES SUMMARY MANIFEST CARDS */
+    .modules-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 14px;
+      margin-top: 10px;
+    }
+
+    .module-card {
+      background: #ffffff;
+      border: 2px solid var(--win-border);
+      box-shadow: 3px 3px 0px var(--win-border);
+      border-left: 6px solid #8b5cf6;
+      border-radius: 4px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: transform 0.15s;
+    }
+    .module-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 4px 4px 0px var(--win-border);
+    }
+
+    .module-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .module-badge {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      font-weight: 800;
+      color: #6d28d9;
+    }
+
+    .module-count {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      background: #ede9fe;
+      color: #5b21b6;
+      border: 1px solid #c4b5fd;
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+
+    .module-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1e1b4b;
+    }
+
+    .module-facts-list {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      color: #334155;
+      line-height: 1.5;
+      padding-left: 18px;
+    }
+    .module-facts-list li {
+      margin-bottom: 3px;
+    }
+
+    /* VINTAGE SEGMENTED PROGRESS BAR (IMAGE 3) */
+    .vintage-progress-window {
+      background: #ffffff;
+      border: 2px solid var(--win-border);
+      box-shadow: 3px 3px 0px var(--win-border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .vintage-progress-track {
+      background: #ffffff;
+      border: 2px solid var(--win-border);
+      box-shadow: inset 2px 2px 0px rgba(0,0,0,0.1);
+      padding: 4px;
+      border-radius: 3px;
+      display: flex;
+      gap: 3px;
+      height: 28px;
+      align-items: center;
+    }
+
+    .progress-block {
+      flex: 1;
+      height: 100%;
+      background: #e2e8f0;
+      border: 1px solid #cbd5e1;
+      border-radius: 1px;
+      transition: background 0.2s;
+    }
+
+    .progress-block.filled {
+      background: #0f172a;
+      border-color: #0f172a;
+    }
+
+    /* REAL-TIME 7 STAGE STREAMING CARDS */
+    .stages-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 12px;
+      max-height: 380px;
       overflow-y: auto;
-      padding-right: 6px;
+      padding: 4px;
     }
 
     .stage-card {
-      background: rgba(19, 26, 48, 0.8);
-      border-left: 4px solid var(--neon-cyan);
-      border-radius: 2px;
-      padding: 10px 14px;
+      background: #ffffff;
+      border: 2px solid var(--win-border);
+      box-shadow: 2.5px 2.5px 0px var(--win-border);
+      border-left: 6px solid #94a3b8;
+      border-radius: 4px;
+      padding: 10px 12px;
+      transition: all 0.2s;
+    }
+
+    .stage-card.stage-active {
+      border-left-color: #2dd4bf;
+      background: #f0fdfa;
+      box-shadow: 3.5px 3.5px 0px var(--win-border);
+      transform: scale(1.01);
+    }
+
+    .stage-card.stage-done {
+      border-left-color: #10b981;
+      background: #f0fdf4;
+    }
+
+    .stage-card-title {
+      font-weight: 800;
       font-size: 13px;
-      transition: all 0.3s;
-    }
-
-    .stage-card:hover {
-      border-left-color: var(--neon-pink);
-      transform: translateX(4px);
-      box-shadow: 0 0 15px rgba(255, 0, 127, 0.2);
-    }
-
-    .stage-header {
+      color: #1e1b4b;
       display: flex;
       justify-content: space-between;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 12px;
-      color: var(--neon-cyan);
-      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .stage-card-data {
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      color: #334155;
+      line-height: 1.4;
+    }
+
+    /* GEMMA 4 REASONING BOX */
+    .gemma-box {
+      background: #faf5ff;
+      border: 2px solid var(--win-border);
+      box-shadow: 3px 3px 0px var(--win-border);
+      border-radius: 4px;
+      padding: 14px;
+      margin-top: 10px;
+    }
+
+    .gemma-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .gemma-title {
+      font-weight: 800;
+      font-size: 14px;
+      color: #6b21a8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .gemma-status-pill {
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      background: #dcfce7;
+      color: #15803d;
+      border: 1.5px solid #16a34a;
+      border-radius: 3px;
+    }
+
+    .gemma-content {
+      font-size: 13px;
+      color: #1e1b4b;
+      line-height: 1.6;
+    }
+
+    /* DIRECT QA ANSWER BOX */
+    .qa-answer-box {
+      background: #fdf4ff;
+      border: 2px solid var(--win-border);
+      box-shadow: 3px 3px 0px var(--win-border);
+      border-radius: 4px;
+      padding: 12px 16px;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .qa-answer-title {
+      font-weight: 800;
+      font-size: 14px;
+      color: #86198f;
       margin-bottom: 4px;
     }
 
-    .stage-body {
+    .qa-answer-text {
+      font-size: 14px;
+      color: #1e1b4b;
+      line-height: 1.6;
+      font-weight: 600;
+    }
+
+    .evidence-stream {
+      margin-top: 10px;
+      max-height: 180px;
+      overflow-y: auto;
+      background: #ffffff;
+      border: 2px solid var(--win-border);
+      box-shadow: inset 1.5px 1.5px 0px rgba(0,0,0,0.06);
+      border-radius: 4px;
+      padding: 8px;
       font-family: 'Fira Code', monospace;
-      font-size: 11px;
-      color: #9cb3c9;
-      line-height: 1.5;
+      font-size: 12px;
     }
 
-    .stage-body strong {
-      color: var(--neon-yellow);
+    .evidence-item {
+      padding: 6px 8px;
+      border-bottom: 1.5px solid #f1f5f9;
+      margin-bottom: 4px;
     }
 
-    /* QUERY & COMMIT GRID */
     .lower-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 20px;
     }
 
-    .cyber-input {
-      width: 100%;
-      background: #0b0f19;
-      border: 1px solid var(--neon-cyan);
-      color: #fff;
-      font-family: 'Fira Code', monospace;
-      padding: 10px 14px;
-      font-size: 13px;
-      outline: none;
-    }
-    .cyber-input:focus {
-      border-color: var(--neon-pink);
-      box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
-    }
-
-    .results-stream {
-      margin-top: 10px;
-      height: 180px;
-      overflow-y: auto;
-      background: #05070e;
-      border: 1px solid rgba(0, 243, 255, 0.15);
-      padding: 10px;
-      font-family: 'Fira Code', monospace;
-      font-size: 12px;
-    }
-
-    .stream-item {
-      padding: 8px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      margin-bottom: 6px;
-    }
-
-    .tag-superseded {
-      background: var(--neon-pink);
-      color: #fff;
-      font-size: 9px;
-      padding: 2px 6px;
-      font-weight: bold;
-    }
-
-    /* Scrollbar cyberpunk */
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #070913;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: var(--neon-cyan);
-      box-shadow: 0 0 10px var(--neon-cyan);
+    @media (max-width: 950px) {
+      .lower-grid { grid-template-columns: 1fr; }
+      .desktop-stickers { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header>
-    <div class="brand">
-      <h1>MORPHE // NEURAL OS</h1>
-      <span class="badge-core">RL-First CAS Memory Topology</span>
+  <!-- RETRO OS TOP NAVIGATION -->
+  <header class="top-os-bar">
+    <div class="top-os-brand">
+      <div class="top-os-logo">MORPHE_2000</div>
+      <div class="top-os-title">Autonomous Neural Memory & Self-Evolving CAS OS</div>
     </div>
-    <div style="display:flex; align-items:center; gap:16px;">
-      <span style="font-size:12px; color:#aaa;">ACTIVE HEAD:</span>
-      <span class="head-badge" id="head-version-display">INIT_ROOT</span>
+    <div class="top-os-decorations">
+      <div class="retro-badge">✨ V2000.4 PRODUCTION</div>
+      <div class="retro-badge" id="head-version-badge">HEAD: <span id="head-version-display" style="font-weight:900; color:#059669;">ROOT</span></div>
+      <div class="retro-badge" style="background:#ccfbf1; color:#0f766e;">🟢 SYS ONLINE</div>
     </div>
   </header>
 
-  <div class="container">
-
-    <!-- TOOLBAR -->
-    <div class="cyber-toolbar">
-      <span style="font-weight:700; color:var(--neon-cyan); font-size:13px; font-family:'Orbitron';">INGEST DOCUMENT:</span>
-      <input type="file" id="pdf-input" accept="application/pdf,.txt,.md" style="font-size:12px; color:#fff;" />
-      <button class="cyber-btn cyber-btn-cyan" onclick="uploadPDF()">UPLOAD & INGEST</button>
-
-      <span style="border-left: 1px solid rgba(0,243,255,0.3); height: 28px;"></span>
-
-      <span style="font-weight:700; color:var(--neon-pink); font-size:13px; font-family:'Orbitron';">AUTONOMOUS RL LOOP:</span>
-      <button class="cyber-btn cyber-btn-pink" onclick="run7StageAdaptation()">TRIGGER 7-STAGE ADAPTATION</button>
-      <button class="cyber-btn cyber-btn-red" onclick="triggerBreakIt()">BREAK IT (AUTO-REJECT)</button>
+  <!-- RETRO DESKTOP STICKERS / ICONS (IMAGE 3 INSPIRATION) -->
+  <div class="desktop-stickers">
+    <div class="sticker-item" onclick="setIngestMode('pdf')">
+      <span style="font-size:28px;">📁</span>
+      <span>My Records</span>
     </div>
+    <div class="sticker-item" onclick="toggleView('diff')">
+      <span style="font-size:28px;">🔬</span>
+      <span>Delta Diff</span>
+    </div>
+    <div class="sticker-item" onclick="run7StagePipelineLive()">
+      <span style="font-size:28px;">⚡</span>
+      <span>Adaptation</span>
+    </div>
+    <div class="sticker-item">
+      <span style="font-size:28px;">💖</span>
+      <span>MORPHE</span>
+    </div>
+  </div>
 
-    <!-- MAIN VIEWPORT GRID -->
-    <div class="viewport-grid">
+  <main class="container">
 
-      <!-- LEFT: 3D INTERACTIVE GRAPH -->
-      <div class="panel">
-        <div class="panel-title">
-          <span>// 3D NEURAL TOPOLOGY GRAPH</span>
-          <span style="font-size:11px; font-family:'Fira Code'; color:var(--neon-yellow);" id="graph-stats">MODULES: 0 | EDGES: 0</span>
+    <!-- WINDOW 1: MEMORY INGESTION & PARSING (PDF OR TEXT) -->
+    <section class="y2k-window">
+      <div class="y2k-titlebar">
+        <span class="y2k-window-title">💾 [STAGE 0] MEMORY INGESTION // CHAT LOG & PDF PARSING</span>
+        <div class="y2k-window-controls">
+          <span class="y2k-ctrl-btn">_</span>
+          <span class="y2k-ctrl-btn">□</span>
+          <span class="y2k-ctrl-btn">✕</span>
         </div>
-        <div style="font-size:11px; color:#888; margin-bottom:8px; font-family:'Fira Code';">
-          [CONTROLS: Left Click + Drag = Rotate | Right Click = Pan | Scroll = Zoom | Hover = Inspect Node]
-        </div>
-        <div id="3d-graph-container"></div>
       </div>
-
-      <!-- RIGHT: 7-STAGE WORKFLOW ENGINE -->
-      <div class="panel">
-        <div class="panel-title">
-          <span>// 7-STAGE RL ENGINE WORKFLOW</span>
-          <span style="font-size:10px; font-family:'Fira Code'; color:var(--neon-green);" id="engine-status">STANDBY</span>
+      <div class="y2k-content">
+        <div class="section-headline">
+          <span>Ingest Multi-Turn Chat or Knowledge Log</span>
+          <span class="retro-badge" id="ingest-status" style="background:#dcfce7; color:#15803d;">READY</span>
         </div>
-        <div class="stages-container" id="stages-stream">
-          <div style="color:#556; font-size:12px; font-style:italic; padding:20px; text-align:center;">
-            Trigger adaptation above to view live inter-stage data flow (Inputs -> Diagnostics -> Bandit -> IPS -> Sandbox -> Reward -> Gate).
+
+        <div class="tab-bar">
+          <button class="tab-btn active" id="tab-mode-pdf" onclick="setIngestMode('pdf')">📄 Upload PDF Log</button>
+          <button class="tab-btn" id="tab-mode-text" onclick="setIngestMode('text')">📝 Direct Text Paste</button>
+        </div>
+
+        <!-- PDF UPLOAD PANEL -->
+        <div id="panel-ingest-pdf">
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; background:#fdf4ff; border:2px dashed #c084fc; padding:16px; border-radius:4px;">
+            <input type="file" id="pdf-input" accept="application/pdf,.txt,.md" style="font-size:13px; font-weight:700;" />
+            <button class="retro-btn retro-btn-purple" onclick="uploadPDF()">✨ Ingest & Chunk Document</button>
+            <span class="section-subtitle">Auto-extracts vector or raw text, performs FastCDC semantic chunking & dynamic K-Means clustering.</span>
+          </div>
+        </div>
+
+        <!-- DIRECT TEXT PASTE PANEL -->
+        <div id="panel-ingest-text" style="display:none;">
+          <textarea id="chat-paste-area" class="retro-input" style="height:100px; resize:vertical;" placeholder="Paste dialogue here (e.g. User: We switched to MongoDB... Assistant: Confirmed...)"></textarea>
+          <div style="margin-top:10px;">
+            <button class="retro-btn retro-btn-purple" onclick="ingestPastedText()">✨ Ingest Pasted Dialogue</button>
           </div>
         </div>
       </div>
+    </section>
 
-    </div>
+    <!-- WINDOW 2: 3D TOPOLOGY GRAPH & VISUAL DELTA DIFF VIEW -->
+    <section class="y2k-window">
+      <div class="y2k-titlebar">
+        <div style="display:flex; gap:10px; align-items:center;">
+          <span class="y2k-window-title">🌐 NEURAL TOPOLOGY GRAPH & VISUAL DELTA DIFF</span>
+          <button class="retro-btn retro-btn-purple" style="padding:3px 10px; font-size:11px;" id="btn-view-3d" onclick="toggleView('3d')">🌌 3D Neural View</button>
+          <button class="retro-btn" style="padding:3px 10px; font-size:11px;" id="btn-view-diff" onclick="toggleView('diff')">🔬 Visual Delta Diff (Vn ➔ Vn+1)</button>
+        </div>
+        <div class="y2k-window-controls">
+          <span class="y2k-ctrl-btn">_</span>
+          <span class="y2k-ctrl-btn">□</span>
+          <span class="y2k-ctrl-btn">✕</span>
+        </div>
+      </div>
+      <div class="y2k-content">
 
-    <!-- LOWER GRID: RETRIEVAL & VERSION LINEAGE -->
+        <!-- 3D GRAPH VIEW -->
+        <div id="wrapper-3d-view">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div class="section-headline" style="font-size:17px; border:none; padding:0;">
+              Active Topology Space
+            </div>
+            <div class="retro-badge" id="graph-stats">MODULES: 0 | EDGES: 0</div>
+          </div>
+          <div style="font-size:11px; font-family:'Fira Code'; color:#64748b; margin-bottom:8px;">
+            [Left Click + Drag: Rotate Orbit (Position Preserved) | Right Click: Pan | Scroll: Zoom | Hover Node: Inspect Details]
+          </div>
+          <div id="3d-graph-container"></div>
+        </div>
+
+        <!-- VISUAL DELTA DIFF VIEW (CYTOSCAPE DIFF VIEW - SPECIFIED IN IMAGE 1) -->
+        <div id="wrapper-diff-view" style="display:none; flex-direction:column; gap:14px;">
+          
+          <div class="diff-controls-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+              <span class="section-headline" style="font-size:16px; border:none; padding:0;">
+                Version Scrubber & Delta Comparison (Vn ➔ Vn+1)
+              </span>
+              <div style="display:flex; gap:8px;">
+                <button class="retro-btn retro-btn-mint" onclick="stepVersionDiff(-1)">⏪ Prev Version</button>
+                <button class="retro-btn retro-btn-purple" onclick="playVersionScrubbing()">🎬 Auto-Play Scrub</button>
+                <button class="retro-btn retro-btn-mint" onclick="stepVersionDiff(1)">⏩ Next Version</button>
+              </div>
+            </div>
+
+            <!-- SCRUBBER SLIDER -->
+            <div class="slider-row">
+              <span style="font-family:'Fira Code'; font-size:12px; font-weight:800; color:#4c1d95;" id="slider-label-v1">V0: ROOT</span>
+              <input type="range" id="diff-version-slider" class="retro-slider" min="0" max="0" value="0" oninput="onVersionSliderScrub(this.value)" />
+              <span style="font-family:'Fira Code'; font-size:12px; font-weight:800; color:#059669;" id="slider-label-v2">V1: HEAD</span>
+            </div>
+
+            <!-- SIDE-BY-SIDE METRIC DELTAS (IMAGE 1 SPECIFICATION) -->
+            <div class="metric-deltas-grid">
+              <div class="metric-delta-card">
+                <div class="metric-label">
+                  <span>Δ Recall @ 5</span>
+                  <span id="badge-recall" class="metric-badge neutral">0.000</span>
+                </div>
+                <div class="metric-values">
+                  <span class="metric-val-new" id="val-recall-diff">+0.000</span>
+                  <span style="font-size:11px; color:#64748b;" id="val-recall-baseline">Baseline: 0.000</span>
+                </div>
+              </div>
+
+              <div class="metric-delta-card">
+                <div class="metric-label">
+                  <span>Δ Latency</span>
+                  <span id="badge-latency" class="metric-badge neutral">0.0 ms</span>
+                </div>
+                <div class="metric-values">
+                  <span class="metric-val-new" id="val-latency-diff">-0.0 ms</span>
+                  <span style="font-size:11px; color:#64748b;" id="val-latency-baseline">Baseline: 0.0 ms</span>
+                </div>
+              </div>
+
+              <div class="metric-delta-card">
+                <div class="metric-label">
+                  <span>Δ MRR</span>
+                  <span id="badge-mrr" class="metric-badge neutral">0.000</span>
+                </div>
+                <div class="metric-values">
+                  <span class="metric-val-new" id="val-mrr-diff">+0.000</span>
+                  <span style="font-size:11px; color:#64748b;" id="val-mrr-baseline">Baseline: 0.000</span>
+                </div>
+              </div>
+
+              <div class="metric-delta-card">
+                <div class="metric-label">
+                  <span>Δ Traversal Cost</span>
+                  <span id="badge-cost" class="metric-badge neutral">0.00</span>
+                </div>
+                <div class="metric-values">
+                  <span class="metric-val-new" id="val-cost-diff">-0.00</span>
+                  <span style="font-size:11px; color:#64748b;" id="val-cost-baseline">Baseline: 0.00</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- DIFF REASON & COMMIT CARD -->
+            <div style="font-family:'Fira Code'; font-size:12px; color:#1e1b4b; background:#ffffff; border:1.5px solid var(--win-border); padding:8px 12px; border-radius:3px;">
+              <strong>Active Commit Action:</strong> <span id="diff-commit-summary">Initial baseline graph. Run an adaptation step to generate mutations.</span>
+            </div>
+
+            <!-- COLOR-CODED DELTA LEGEND (EXACT REQUIREMENTS FROM IMAGE 1) -->
+            <div class="diff-legend">
+              <div class="legend-item">
+                <div class="legend-dot" style="background:#10b981;"></div>
+                <span>🟢 Green: Newly split nodes / newly formed shortcut edges</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot" style="background:#ef4444;"></div>
+                <span>🔴 Red: Pruned cold edges or merged nodes</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot" style="background:#f59e0b;"></div>
+                <span>🟡 Amber: Adjusted edge weights or charters</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot" style="background:#94a3b8;"></div>
+                <span>⚪ Grey: Unchanged</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- CYTOSCAPE 2D DELTA GRAPH CANVAS -->
+          <div id="cytoscape-diff-container"></div>
+        </div>
+
+        <!-- AI AGENT MEMORY MANIFEST // SELECTED MODULES SUMMARY -->
+        <div style="margin-top:14px; border-top:2px solid rgba(30,27,75,0.08); padding-top:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="section-headline" style="font-size:16px; border:none; padding:0;">
+              🧠 AI Agent Memory Manifest // Selected Modules Summary
+            </div>
+            <div class="retro-badge" id="summary-mod-count" style="background:#ede9fe; color:#5b21b6;">0 MODULES RETAINED</div>
+          </div>
+          <div class="modules-summary-grid" id="modules-summary-container">
+            <div style="color:#64748b; font-size:13px; font-style:italic; padding:10px;">
+              Ingest a document or chat log above to inspect the dynamic modules and key knowledge facts extracted for the AI agent!
+            </div>
+          </div>
+        </div>
+
+        <!-- GEMMA 4 AUTONOMOUS COGNITIVE SYNTHESIS -->
+        <div class="gemma-box" id="gemma-box">
+          <div class="gemma-header">
+            <div class="gemma-title">
+              <span>⚡ GEMMA 4 AUTONOMOUS PROCESS & COGNITIVE SYNTHESIS</span>
+            </div>
+            <span class="gemma-status-pill" id="gemma-status-pill">ONLINE</span>
+          </div>
+          <div class="gemma-content" id="gemma-summary-text">
+            Awaiting memory ingestion to generate autonomous reasoning synthesis...
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- WINDOW 3: 7-STAGE ADAPTIVE RECONFIGURATION ENGINE WITH VINTAGE PROGRESS BAR (IMAGE 3) -->
+    <section class="y2k-window">
+      <div class="y2k-titlebar mint-bar">
+        <span class="y2k-window-title">⚙️ 7-STAGE AUTONOMOUS ADAPTATION PIPELINE</span>
+        <div class="y2k-window-controls">
+          <span class="y2k-ctrl-btn">_</span>
+          <span class="y2k-ctrl-btn">□</span>
+          <span class="y2k-ctrl-btn">✕</span>
+        </div>
+      </div>
+      <div class="y2k-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div class="section-headline" style="font-size:17px; border:none; padding:0;">
+            Real-Time Adaptation Cycle Execution
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="retro-btn retro-btn-mint" id="btn-run-stages" onclick="run7StagePipelineLive()">▶ Run 7-Stage Adaptation Cycle</button>
+            <button class="retro-btn retro-btn-red" onclick="triggerBreakIt()">💥 Break It (Adversarial Reject)</button>
+          </div>
+        </div>
+
+        <!-- VINTAGE SEGMENTED PROGRESS BAR (INSPIRED BY IMAGE 3 DIALOG) -->
+        <div class="vintage-progress-window">
+          <div class="y2k-titlebar mint-bar" style="padding:4px 10px; font-size:12px;">
+            <span style="font-weight:800; font-family:'Fira Code'; font-size:11px;">Pipeline Execution Progress</span>
+            <span style="font-weight:900; font-family:monospace;" id="progress-percent">0 / 7 STAGES</span>
+          </div>
+          <div style="padding:8px 12px; background:#fffbfa;">
+            <div class="vintage-progress-track" id="progress-blocks-track">
+              <div class="progress-block" id="pblock-1"></div>
+              <div class="progress-block" id="pblock-2"></div>
+              <div class="progress-block" id="pblock-3"></div>
+              <div class="progress-block" id="pblock-4"></div>
+              <div class="progress-block" id="pblock-5"></div>
+              <div class="progress-block" id="pblock-6"></div>
+              <div class="progress-block" id="pblock-7"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIVE STREAMING STAGE CARDS -->
+        <div class="stages-grid" id="stages-stream">
+          <div style="color:#64748b; font-size:13px; font-style:italic; padding:12px;">
+            Click "▶ Run 7-Stage Adaptation Cycle" to watch data pass through each stage in real time: Weakness Diagnostics &rarr; Eligibility Filter &rarr; Bandit Action &rarr; Pre-Screen &rarr; CoW Sandbox &rarr; Ground Truth Reward &rarr; Pareto Ledger Commit.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOWER ROW: WINDOW 4 (RETRIEVAL QA) & WINDOW 5 (GIT LEDGER & ROLLBACK) -->
     <div class="lower-grid">
 
-      <!-- QUERY & TEMPORAL DISAMBIGUATION -->
-      <div class="panel">
-        <div class="panel-title">
-          <span>// TEMPORAL MEMORY QUERY RETRIEVAL</span>
+      <!-- WINDOW 4: KNOWLEDGE RETRIEVAL & AI QA SYNTHESIS -->
+      <section class="y2k-window">
+        <div class="y2k-titlebar">
+          <span class="y2k-window-title">🔍 KNOWLEDGE RETRIEVAL & AI QA SYNTHESIS</span>
+          <div class="y2k-window-controls">
+            <span class="y2k-ctrl-btn">_</span>
+            <span class="y2k-ctrl-btn">□</span>
+            <span class="y2k-ctrl-btn">✕</span>
+          </div>
         </div>
-        <div style="display:flex; gap:8px;">
-          <input type="text" id="query-input" class="cyber-input" placeholder="Query knowledge (e.g. 'What was used before?' or 'Current RL policy?')" />
-          <button class="cyber-btn cyber-btn-cyan" onclick="executeSearch()">SEARCH</button>
-        </div>
-        <div class="results-stream" id="query-results">
-          <span style="color:#556;">Awaiting query execution...</span>
-        </div>
-      </div>
+        <div class="y2k-content">
+          <div class="section-headline" style="font-size:16px; border:none; padding:0;">
+            Ask Question Across Ingested Modules
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="query-input" class="retro-input" placeholder="Ask question (e.g. 'What algorithm is used?' or 'What database did we replace?')" onkeydown="if(event.key==='Enter') executeSearch();" />
+            <button class="retro-btn retro-btn-purple" onclick="executeSearch()">Ask</button>
+          </div>
 
-      <!-- GIT-STYLE LEDGER & ROLLBACK -->
-      <div class="panel">
-        <div class="panel-title">
-          <span>// TIME-TRAVEL COMMIT LEDGER</span>
+          <!-- SYNTHESIZED GROUNDED ANSWER -->
+          <div class="qa-answer-box" id="qa-answer-box">
+            <div class="qa-answer-title">🧠 Grounded Answer:</div>
+            <div class="qa-answer-text" id="qa-answer-text">...</div>
+          </div>
+
+          <!-- SHORTLISTED MODULES FOR THIS QUERY -->
+          <div id="qa-shortlisted-container" style="display:none; margin-top:12px;">
+            <div style="font-size:12px; font-weight:800; color:#4c1d95; text-transform:uppercase; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+              <span>🎯 Shortlisted Modules for this Query:</span>
+              <span id="qa-shortlisted-count" class="retro-badge" style="font-size:10px; padding:2px 6px;">0 MODULES</span>
+            </div>
+            <div id="qa-shortlisted-cards" style="display:flex; flex-direction:column; gap:8px;"></div>
+          </div>
+
+          <!-- EVIDENCE STREAM -->
+          <div class="evidence-stream" id="query-results" style="margin-top:12px;">
+            <span style="color:#64748b;">Awaiting query...</span>
+          </div>
         </div>
-        <div style="display:flex; gap:8px; align-items:center;">
-          <select id="version-select" class="cyber-input" style="flex:1;"></select>
-          <button class="cyber-btn cyber-btn-pink" onclick="executeRollback()">ROLLBACK</button>
+      </section>
+
+      <!-- WINDOW 5: GIT-STYLE COMMIT LEDGER & ROLLBACK -->
+      <section class="y2k-window">
+        <div class="y2k-titlebar pink-bar">
+          <span class="y2k-window-title">📜 IMMUTABLE COMMIT LEDGER & ROLLBACK</span>
+          <div class="y2k-window-controls">
+            <span class="y2k-ctrl-btn">_</span>
+            <span class="y2k-ctrl-btn">□</span>
+            <span class="y2k-ctrl-btn">✕</span>
+          </div>
         </div>
-        <div class="results-stream" id="version-details">
-          <span style="color:#556;">Loading version history...</span>
+        <div class="y2k-content">
+          <div class="section-headline" style="font-size:16px; border:none; padding:0;">
+            Version Control & Rollback
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <select id="version-select" class="retro-input" style="flex:1; font-weight:700;"></select>
+            <button class="retro-btn retro-btn-pink" onclick="executeRollback()">Rollback</button>
+          </div>
+          <div class="evidence-stream" id="version-details">
+            <span style="color:#64748b;">Loading immutable ledger history...</span>
+          </div>
         </div>
-      </div>
+      </section>
 
     </div>
 
-  </div>
+  </main>
 
   <script>
     let graph3D = null;
+    let cyDiff = null;
+    let currentView = '3d';
+    let loadedVersions = [];
+    let isPipelineRunning = false;
+    let scrubInterval = null;
 
-    function init3DGraph() {
-      const elem = document.getElementById('3d-graph-container');
-      graph3D = ForceGraph3D()(elem)
-        .backgroundColor('#02040a')
-        .nodeLabel(node => `${node.id}\nItems: ${node.record_count}\nCharter: ${node.charter}`)
-        .nodeColor(node => node.color)
-        .nodeVal(node => Math.max(8, node.record_count * 2.5))
-        .linkColor(link => link.color)
-        .linkWidth(2.5)
-        .linkDirectionalParticles(2)
-        .linkDirectionalParticleSpeed(0.006)
-        .linkDirectionalParticleWidth(2);
+    // --- INGESTION MODE (PDF vs TEXT) ---
+    function setIngestMode(mode) {
+      const pPdf = document.getElementById('panel-ingest-pdf');
+      const pText = document.getElementById('panel-ingest-text');
+      const tPdf = document.getElementById('tab-mode-pdf');
+      const tText = document.getElementById('tab-mode-text');
+
+      if (mode === 'pdf') {
+        pPdf.style.display = 'block';
+        pText.style.display = 'none';
+        tPdf.classList.add('active');
+        tText.classList.remove('active');
+      } else {
+        pPdf.style.display = 'none';
+        pText.style.display = 'block';
+        tPdf.classList.remove('active');
+        tText.classList.add('active');
+      }
     }
 
+    // --- VIEW SWITCHER (3D vs CYTOSCAPE DELTA DIFF) ---
+    function toggleView(view) {
+      currentView = view;
+      const w3d = document.getElementById('wrapper-3d-view');
+      const wDiff = document.getElementById('wrapper-diff-view');
+      const b3d = document.getElementById('btn-view-3d');
+      const bDiff = document.getElementById('btn-view-diff');
+
+      if (view === '3d') {
+        w3d.style.display = 'block';
+        wDiff.style.display = 'none';
+        b3d.classList.add('retro-btn-purple');
+        bDiff.classList.remove('retro-btn-purple');
+      } else {
+        w3d.style.display = 'none';
+        wDiff.style.display = 'flex';
+        b3d.classList.remove('retro-btn-purple');
+        bDiff.classList.add('retro-btn-purple');
+        
+        // Auto-scrub to latest or trigger diff
+        if (loadedVersions.length > 0) {
+          const slider = document.getElementById('diff-version-slider');
+          slider.max = Math.max(0, loadedVersions.length - 1);
+          slider.value = slider.max;
+          onVersionSliderScrub(slider.value);
+        } else {
+          loadCytoscapeDiff();
+        }
+      }
+    }
+
+    // --- 3D GRAPH INITIALIZATION WITH CAMERA STABILITY ---
+    function init3DGraph() {
+      const elem = document.getElementById('3d-graph-container');
+      const width = elem.clientWidth || 1350;
+      const height = 480;
+
+      graph3D = ForceGraph3D()(elem)
+        .width(width)
+        .height(height)
+        .backgroundColor('#0f172a')
+        .nodeLabel(node => `MODULE: ${node.id}\nItems: ${node.record_count}\nCharter: ${node.charter}`)
+        .nodeColor(node => node.color)
+        .nodeVal(node => Math.max(14, node.record_count * 2.5))
+        .linkColor(link => link.color)
+        .linkWidth(2.8)
+        .linkOpacity(0.9)
+        .linkDirectionalParticles(3)
+        .linkDirectionalParticleSpeed(0.008)
+        .linkDirectionalParticleWidth(2.2);
+    }
+
+    // --- REFRESH GRAPH PRESERVING USER CAMERA ROTATION ---
     async function refreshGraph() {
       try {
         const res = await fetch('/api/graph');
@@ -459,53 +1191,289 @@
             id: e.data.id,
             record_count: e.data.record_count,
             charter: e.data.charter,
-            color: e.data.record_count >= 8 ? '#ff007f' : '#00f3ff'
+            color: e.data.record_count >= 8 ? '#f43f5e' : '#a78bfa'
           })),
           links: data.elements.filter(e => e.data.source).map(e => ({
             source: e.data.source,
             target: e.data.target,
-            color: e.data.edge_type === 'shortcut' ? '#ffe600' : e.data.edge_type === 'supersedes' ? '#9d4edd' : '#00ff66'
+            color: e.data.edge_type === 'shortcut' ? '#f59e0b' : e.data.edge_type === 'supersedes' ? '#ec4899' : '#10b981'
           }))
         };
 
-        graph3D.graphData(gData);
+        if (graph3D) {
+          const cam = graph3D.camera();
+          const camPos = cam ? { x: cam.position.x, y: cam.position.y, z: cam.position.z } : null;
+          graph3D.graphData(gData);
+          if (camPos && camPos.x) {
+            graph3D.cameraPosition(camPos, null, 0);
+          }
+        }
         await refreshVersions();
+        await refreshGemmaSummary();
       } catch(err) {
         console.error("Graph refresh failed:", err);
       }
     }
 
+    // --- REFRESH GEMMA 4 SUMMARY ---
+    async function refreshGemmaSummary() {
+      try {
+        const res = await fetch('/api/summary');
+        const data = await res.json();
+        if (data.summary) {
+          document.getElementById('gemma-summary-text').innerText = data.summary;
+          document.getElementById('gemma-status-pill').innerText = `${data.model || 'GEMMA 4'} [${data.status || 'ONLINE'}]`;
+        }
+      } catch(e) {}
+    }
+
+    // --- RENDER MODULES SUMMARY FOR AI AGENT ---
+    function renderModulesSummary(modules) {
+      const container = document.getElementById('modules-summary-container');
+      const countBadge = document.getElementById('summary-mod-count');
+      if (!modules || modules.length === 0) return;
+
+      countBadge.innerText = `${modules.length} MODULES RETAINED`;
+      container.innerHTML = "";
+
+      modules.forEach(m => {
+        let factsHtml = "";
+        (m.key_facts || []).forEach(f => {
+          factsHtml += `<li>${f}</li>`;
+        });
+
+        container.innerHTML += `
+          <div class="module-card">
+            <div class="module-card-header">
+              <span class="module-badge">📦 ${m.module_id}</span>
+              <span class="module-count">${m.record_count} RECORDS</span>
+            </div>
+            <div class="module-title">${m.title}</div>
+            <div style="font-size:12px; color:#64748b; font-style:italic;">${m.charter}</div>
+            <div style="margin-top:4px;">
+              <strong style="color:#7c3aed; font-size:11px; font-family:'Fira Code';">KEY KNOWLEDGE FACTS:</strong>
+              <ul class="module-facts-list">
+                ${factsHtml}
+              </ul>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // --- VERSION SCRUBBER & DELTA DIFF (IMAGE 1 SPECIFICATION) ---
+    async function onVersionSliderScrub(val) {
+      const idx = parseInt(val);
+      if (!loadedVersions || loadedVersions.length === 0) return;
+
+      let v1_id, v2_id;
+      if (loadedVersions.length === 1) {
+        v1_id = loadedVersions[0].version_id;
+        v2_id = loadedVersions[0].version_id;
+      } else if (idx === 0) {
+        v1_id = loadedVersions[0].version_id;
+        v2_id = loadedVersions[Math.min(1, loadedVersions.length - 1)].version_id;
+      } else {
+        v1_id = loadedVersions[idx - 1].version_id;
+        v2_id = loadedVersions[idx].version_id;
+      }
+
+      document.getElementById('slider-label-v1').innerText = `V${Math.max(0, idx - 1)}: ${v1_id.substring(0, 8)}`;
+      document.getElementById('slider-label-v2').innerText = `V${idx}: ${v2_id.substring(0, 8)}`;
+
+      await fetchAndRenderDelta(v1_id, v2_id);
+    }
+
+    function stepVersionDiff(delta) {
+      const slider = document.getElementById('diff-version-slider');
+      let nextVal = parseInt(slider.value) + delta;
+      if (nextVal < 0) nextVal = 0;
+      if (nextVal > parseInt(slider.max)) nextVal = parseInt(slider.max);
+      slider.value = nextVal;
+      onVersionSliderScrub(nextVal);
+    }
+
+    function playVersionScrubbing() {
+      if (scrubInterval) {
+        clearInterval(scrubInterval);
+        scrubInterval = null;
+        return;
+      }
+      const slider = document.getElementById('diff-version-slider');
+      slider.value = 0;
+      onVersionSliderScrub(0);
+      scrubInterval = setInterval(() => {
+        let cur = parseInt(slider.value);
+        if (cur >= parseInt(slider.max)) {
+          clearInterval(scrubInterval);
+          scrubInterval = null;
+        } else {
+          slider.value = cur + 1;
+          onVersionSliderScrub(cur + 1);
+        }
+      }, 1200);
+    }
+
+    async function fetchAndRenderDelta(v1, v2) {
+      try {
+        const res = await fetch(`/api/diff?v1=${v1}&v2=${v2}`);
+        const diffData = await res.json();
+
+        // Render Cytoscape Delta Graph
+        renderCytoscape(diffData.elements);
+
+        // Update Side-by-Side Metric Deltas (Image 1 requirement)
+        updateMetricDeltas(diffData);
+
+        // Update Reason Summary
+        const summaryElem = document.getElementById('diff-commit-summary');
+        if (diffData.summary) {
+          summaryElem.innerText = diffData.summary;
+        }
+      } catch(e) {
+        console.error("Delta load failed:", e);
+      }
+    }
+
+    function updateMetricDeltas(diffData) {
+      const deltas = diffData.metric_deltas || {};
+      const v1m = diffData.v1_metrics || {};
+      const v2m = diffData.v2_metrics || {};
+
+      // 1. Recall@5
+      const dRecall = deltas["Recall@5"] !== undefined ? deltas["Recall@5"] : 0;
+      const bRecall = document.getElementById('badge-recall');
+      const vRecall = document.getElementById('val-recall-diff');
+      vRecall.innerText = (dRecall >= 0 ? "+" : "") + dRecall.toFixed(3);
+      bRecall.innerText = (dRecall >= 0 ? "▲ +" : "▼ ") + (dRecall * 100).toFixed(1) + "%";
+      bRecall.className = "metric-badge " + (dRecall > 0 ? "positive" : dRecall < 0 ? "negative" : "neutral");
+      document.getElementById('val-recall-baseline').innerText = `Baseline: ${(v1m["Recall@5"] || 0).toFixed(3)} ➔ ${(v2m["Recall@5"] || 0).toFixed(3)}`;
+
+      // 2. Latency
+      const dLatency = deltas["latency_ms"] !== undefined ? deltas["latency_ms"] : 0;
+      const bLatency = document.getElementById('badge-latency');
+      const vLatency = document.getElementById('val-latency-diff');
+      vLatency.innerText = (dLatency >= 0 ? "+" : "") + dLatency.toFixed(1) + " ms";
+      bLatency.innerText = (dLatency <= 0 ? "▲ FASTER" : "▼ SLOWER");
+      bLatency.className = "metric-badge " + (dLatency <= 0 ? "positive" : "negative");
+      document.getElementById('val-latency-baseline').innerText = `Baseline: ${(v1m["latency_ms"] || 0).toFixed(1)}ms ➔ ${(v2m["latency_ms"] || 0).toFixed(1)}ms`;
+
+      // 3. MRR
+      const dMRR = deltas["MRR"] !== undefined ? deltas["MRR"] : 0;
+      const bMRR = document.getElementById('badge-mrr');
+      const vMRR = document.getElementById('val-mrr-diff');
+      vMRR.innerText = (dMRR >= 0 ? "+" : "") + dMRR.toFixed(3);
+      bMRR.innerText = (dMRR >= 0 ? "▲ +" : "▼ ") + (dMRR * 100).toFixed(1) + "%";
+      bMRR.className = "metric-badge " + (dMRR > 0 ? "positive" : dMRR < 0 ? "negative" : "neutral");
+      document.getElementById('val-mrr-baseline').innerText = `Baseline: ${(v1m["MRR"] || 0).toFixed(3)} ➔ ${(v2m["MRR"] || 0).toFixed(3)}`;
+
+      // 4. Traversal Cost
+      const dCost = deltas["traversal_cost"] !== undefined ? deltas["traversal_cost"] : 0;
+      const bCost = document.getElementById('badge-cost');
+      const vCost = document.getElementById('val-cost-diff');
+      vCost.innerText = (dCost >= 0 ? "+" : "") + dCost.toFixed(2);
+      bCost.innerText = (dCost <= 0 ? "▲ OPTIMAL" : "▼ HEAVIER");
+      bCost.className = "metric-badge " + (dCost <= 0 ? "positive" : "negative");
+      document.getElementById('val-cost-baseline').innerText = `Baseline: ${(v1m["traversal_cost"] || 0).toFixed(2)} ➔ ${(v2m["traversal_cost"] || 0).toFixed(2)}`;
+    }
+
+    function renderCytoscape(elements) {
+      const container = document.getElementById('cytoscape-diff-container');
+      if (!cyDiff) {
+        cyDiff = cytoscape({
+          container: container,
+          style: [
+            {
+              selector: 'node',
+              style: {
+                'label': 'data(label)',
+                'background-color': 'data(color)',
+                'color': '#0f172a',
+                'font-size': '11px',
+                'font-weight': 'bold',
+                'font-family': 'Fira Code',
+                'text-valign': 'bottom',
+                'text-margin-y': 5,
+                'width': 44,
+                'height': 44,
+                'border-width': 2.5,
+                'border-color': '#1e1b4b'
+              }
+            },
+            {
+              selector: 'edge',
+              style: {
+                'width': 3,
+                'line-color': 'data(color)',
+                'target-arrow-color': 'data(color)',
+                'target-arrow-shape': 'triangle',
+                'curve-style': 'bezier',
+                'label': 'data(label)',
+                'font-size': '10px',
+                'font-weight': 'bold',
+                'font-family': 'Fira Code',
+                'color': '#1e1b4b',
+                'text-background-color': '#ffffff',
+                'text-background-opacity': 0.85,
+                'text-background-padding': 2,
+                'text-background-shape': 'roundrectangle'
+              }
+            }
+          ],
+          layout: { name: 'cose', animate: false, padding: 35 }
+        });
+      }
+      cyDiff.elements().remove();
+      cyDiff.add(elements.map(e => ({ group: e.data.source ? 'edges' : 'nodes', data: e.data })));
+      cyDiff.layout({ name: 'cose', animate: false, padding: 35 }).run();
+    }
+
+    async function loadCytoscapeDiff() {
+      if (loadedVersions.length === 0) return;
+      const v1 = loadedVersions[0].version_id;
+      const v2 = loadedVersions[loadedVersions.length - 1].version_id;
+      await fetchAndRenderDelta(v1, v2);
+    }
+
+    // --- REFRESH COMMIT LEDGER & SLIDER ---
     async function refreshVersions() {
       try {
         const res = await fetch('/api/versions');
         const data = await res.json();
+        loadedVersions = data.versions || [];
+
         const sel = document.getElementById("version-select");
         const details = document.getElementById("version-details");
         sel.innerHTML = "";
         details.innerHTML = "";
 
-        data.versions.forEach(v => {
+        // Update Slider Bounds
+        const slider = document.getElementById('diff-version-slider');
+        slider.max = Math.max(0, loadedVersions.length - 1);
+
+        loadedVersions.forEach(v => {
           const opt = document.createElement("option");
           opt.value = v.version_id;
-          opt.text = `${v.version_id} [${v.reason_card.substring(0, 40)}...]`;
+          opt.text = `${v.version_id} [${v.reason_card.substring(0, 42)}...]`;
           if (v.is_head) opt.selected = true;
           sel.appendChild(opt);
 
           details.innerHTML += `
-            <div class="stream-item">
-              <strong style="color:var(--neon-cyan);">${v.version_id}</strong> ${v.is_head ? '<span style="color:var(--neon-green); font-weight:bold;">[HEAD]</span>' : ''}
-              <div style="color:#bbb;">${v.reason_card}</div>
-              <div style="font-size:10px; color:#667;">Modules: ${v.module_count} | Edges: ${v.edge_count}</div>
+            <div class="evidence-item">
+              <strong style="color:#7c3aed;">${v.version_id}</strong> ${v.is_head ? '<span class="retro-badge" style="background:#dcfce7; color:#15803d; display:inline-block; font-size:9px; padding:1px 6px;">HEAD</span>' : ''}
+              <div style="color:#1e1b4b; margin-top:2px;">${v.reason_card}</div>
+              <div style="font-size:10px; color:#64748b;">Recall@5: ${v.metrics['Recall@5'] || 0} | Latency: ${v.metrics.latency_ms || 0}ms | Modules: ${v.module_count}</div>
             </div>
           `;
         });
       } catch(e) {}
     }
 
+    // --- UPLOAD PDF FILE ---
     async function uploadPDF() {
       const input = document.getElementById('pdf-input');
       if (!input.files || input.files.length === 0) {
-        alert("Select a PDF document first!");
+        alert("Please select a PDF document first!");
         return;
       }
 
@@ -513,98 +1481,251 @@
       const formData = new FormData();
       formData.append("file", file);
 
+      const statusElem = document.getElementById("ingest-status");
+      statusElem.innerText = "PARSING PDF...";
+      statusElem.style.background = "#fef9c3";
+      statusElem.style.color = "#854d0e";
+
       try {
         const res = await fetch('/api/ingest-pdf', { method: 'POST', body: formData });
         const data = await res.json();
         if (res.ok) {
-          alert(`Document '${file.name}' successfully parsed into ${data.records_stored} immutable records across ${data.modules_created.length} topic modules!`);
+          statusElem.innerText = "COMPLETE";
+          statusElem.style.background = "#dcfce7";
+          statusElem.style.color = "#15803d";
+          alert(`Document '${file.name}' ingested dynamically!\nTurns parsed: ${data.turns_parsed}\nRecords stored: ${data.records_stored}\nModules created: ${data.modules_created.join(', ')}`);
+          if (data.modules_summary) {
+            renderModulesSummary(data.modules_summary);
+          }
           await refreshGraph();
         } else {
+          statusElem.innerText = "ERROR";
+          statusElem.style.background = "#fee2e2";
+          statusElem.style.color = "#991b1b";
           alert("Upload failed: " + data.detail);
         }
       } catch (err) {
+        statusElem.innerText = "ERROR";
         alert("Upload error: " + err.message);
       }
     }
 
-    async function run7StageAdaptation() {
-      document.getElementById("engine-status").innerText = "RUNNING ADAPTATION CYCLE...";
-      const stream = document.getElementById("stages-stream");
-      stream.innerHTML = "<div style='color:var(--neon-yellow);'>[EXECUTING 7-STAGE PIPELINE]...</div>";
+    // --- INGEST PASTED TEXT ---
+    async function ingestPastedText() {
+      const area = document.getElementById("chat-paste-area");
+      const text = area.value.trim();
+      if (!text) {
+        alert("Please paste dialogue into the box first!");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("raw_text", text);
+
+      const statusElem = document.getElementById("ingest-status");
+      statusElem.innerText = "PARSING TEXT...";
+      statusElem.style.background = "#fef9c3";
+      statusElem.style.color = "#854d0e";
 
       try {
-        const res = await fetch('/api/adapt/step', { method: 'POST' });
+        const res = await fetch('/api/ingest-pdf', { method: 'POST', body: formData });
         const data = await res.json();
-        document.getElementById("engine-status").innerText = `STATUS: ${data.status.toUpperCase()}`;
-
-        if (data.stages) {
-          stream.innerHTML = "";
-          data.stages.forEach(s => {
-            stream.innerHTML += `
-              <div class="stage-card">
-                <div class="stage-header">
-                  <span>STAGE ${s.stage}: ${s.name}</span>
-                  <span style="color:${s.status === 'PASS' || s.status === 'COMMITTED' ? 'var(--neon-green)' : 'var(--neon-yellow)'};">[${s.status}]</span>
-                </div>
-                <div class="stage-body">
-                  <div><strong>INPUT:</strong> ${s.input}</div>
-                  <div><strong>OUTPUT:</strong> ${s.output}</div>
-                </div>
-              </div>
-            `;
-          });
+        if (res.ok) {
+          statusElem.innerText = "COMPLETE";
+          statusElem.style.background = "#dcfce7";
+          statusElem.style.color = "#15803d";
+          alert(`Pasted text ingested dynamically!\nTurns parsed: ${data.turns_parsed}\nRecords stored: ${data.records_stored}\nModules created: ${data.modules_created.join(', ')}`);
+          if (data.modules_summary) {
+            renderModulesSummary(data.modules_summary);
+          }
+          await refreshGraph();
+        } else {
+          statusElem.innerText = "ERROR";
+          alert("Ingestion error: " + data.detail);
         }
-        await refreshGraph();
-      } catch(err) {
-        alert("Adaptation error: " + err.message);
+      } catch(e) {
+        statusElem.innerText = "ERROR";
+        alert("Ingestion failed: " + e.message);
       }
     }
 
+    // --- 7-STAGE PIPELINE RUNNING LIVE IN ACTUAL TIME WITH RETRO PROGRESS BAR ---
+    async function run7StagePipelineLive() {
+      if (isPipelineRunning) return;
+      isPipelineRunning = true;
+      const btn = document.getElementById("btn-run-stages");
+      btn.innerText = "Running Adaptation...";
+      btn.style.opacity = "0.7";
+
+      const stream = document.getElementById("stages-stream");
+      stream.innerHTML = "";
+
+      // Reset progress blocks
+      for (let b = 1; b <= 7; b++) {
+        const blk = document.getElementById(`pblock-${b}`);
+        if (blk) blk.classList.remove('filled');
+      }
+      document.getElementById('progress-percent').innerText = "0 / 7 STAGES";
+
+      try {
+        // Trigger server execution
+        const res = await fetch('/api/adapt/step', { method: 'POST' });
+        const data = await res.json();
+        const stages = data.stages || [];
+
+        // Stream each stage in real time with visual pulse
+        for (let i = 0; i < stages.length; i++) {
+          const s = stages[i];
+          const cardId = `stage-card-${s.stage}`;
+
+          // Fill progress block (vintage dialog from Image 3)
+          const blk = document.getElementById(`pblock-${s.stage}`);
+          if (blk) blk.classList.add('filled');
+          document.getElementById('progress-percent').innerText = `${s.stage} / 7 STAGES (${Math.round((s.stage/7)*100)}%)`;
+
+          stream.innerHTML += `
+            <div class="stage-card stage-active" id="${cardId}">
+              <div class="stage-card-title">
+                <span>STAGE ${s.stage} // ${s.name}</span>
+                <span style="color:#d97706; font-size:11px;">[PROCESSING...]</span>
+              </div>
+              <div class="stage-card-data">
+                <div><strong style="color:#0284c7;">INPUT:</strong> ${s.input}</div>
+                <div style="margin-top:3px;"><strong style="color:#d97706;">OUTPUT:</strong> ${s.output}</div>
+              </div>
+            </div>
+          `;
+
+          const card = document.getElementById(cardId);
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+          // 550ms data flow pause to visualize data traveling between stages
+          await new Promise(r => setTimeout(r, 550));
+
+          card.classList.remove('stage-active');
+          card.classList.add('stage-done');
+          card.querySelector('.stage-card-title span:last-child').innerHTML = `<span style="color:#059669; font-weight:bold;">[${s.status}]</span>`;
+        }
+
+        // Display Gemma 4 summary if returned
+        if (data.gemma_summary && data.gemma_summary.summary) {
+          document.getElementById('gemma-summary-text').innerText = data.gemma_summary.summary;
+          document.getElementById('gemma-status-pill').innerText = `${data.gemma_summary.model || 'GEMMA 4'} [${data.gemma_summary.status || 'ONLINE'}]`;
+        }
+
+        await refreshGraph();
+      } catch(err) {
+        alert("Adaptation error: " + err.message);
+      } finally {
+        isPipelineRunning = false;
+        btn.innerText = "▶ Run 7-Stage Adaptation Cycle";
+        btn.style.opacity = "1.0";
+      }
+    }
+
+    // --- BREAK IT ADVERSARIAL TEST ---
     async function triggerBreakIt() {
       try {
         const res = await fetch('/api/break-it', { method: 'POST' });
         const data = await res.json();
-        alert(`[BREAK IT ADVERSARIAL TEST]\n${data.message}\nCalculated Reward: ${data.reward}\nHEAD Version Preserved: ${data.head_version_preserved}`);
-      } catch(err) {
-        alert("Break-it error: " + err.message);
+        alert(`[BREAK-IT ADVERSARIAL TEST]\n${data.message}\nCalculated Reward: ${data.reward}\nHEAD Version Preserved: ${data.head_version_preserved}`);
+        await refreshGraph();
+      } catch(e) {
+        alert("Break-it error: " + e.message);
       }
     }
 
+    // --- DIRECT QA RETRIEVAL & ANSWER SYNTHESIS ---
     async function executeSearch() {
-      const q = document.getElementById("query-input").value;
+      const q = document.getElementById("query-input").value.trim();
       if (!q) return;
 
-      const container = document.getElementById("query-results");
-      container.innerHTML = "<span style='color:var(--neon-cyan);'>Routing & scoring memory modules...</span>";
+      const resultsDiv = document.getElementById("query-results");
+      const answerBox = document.getElementById("qa-answer-box");
+      const answerText = document.getElementById("qa-answer-text");
+
+      resultsDiv.innerHTML = "<span style='color:#7c3aed;'>Routing across all modules and synthesizing answer...</span>";
 
       try {
         const res = await fetch('/api/query', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: q, top_k: 3 })
+          body: JSON.stringify({ query: q, top_k: 4 })
         });
         const data = await res.json();
-        container.innerHTML = "";
+        resultsDiv.innerHTML = "";
 
-        if (data.hits.length === 0) {
-          container.innerHTML = "<span style='color:#777;'>No matching memories found.</span>";
+        // Display Synthesized Answer
+        if (data.answer) {
+          answerBox.style.display = "block";
+          answerText.innerText = data.answer;
+        } else {
+          answerBox.style.display = "none";
+        }
+
+        // Display Shortlisted Modules for this Query
+        const slContainer = document.getElementById("qa-shortlisted-container");
+        const slCards = document.getElementById("qa-shortlisted-cards");
+        const slCount = document.getElementById("qa-shortlisted-count");
+        const shortlisted = data.shortlisted_modules || [];
+
+        if (shortlisted.length > 0) {
+          slContainer.style.display = "block";
+          slCount.innerText = `${shortlisted.length} SHORTLISTED`;
+          slCards.innerHTML = "";
+          shortlisted.forEach(sm => {
+            let factsList = (sm.contributed_facts || []).map(f => `<li>"${f}"</li>`).join("");
+            slCards.innerHTML += `
+              <div style="background:#ffffff; border:2px solid var(--win-border); box-shadow:2px 2px 0px var(--win-border); border-left:5px solid ${sm.archived ? '#f43f5e' : '#a78bfa'}; border-radius:4px; padding:10px 12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <span style="font-weight:800; font-size:13px; color:#1e1b4b;">📦 ${sm.module_id}</span>
+                    <span style="font-size:12px; font-weight:700; color:#6d28d9; margin-left:6px;">(${sm.title})</span>
+                  </div>
+                  <div style="display:flex; gap:6px; align-items:center;">
+                    ${sm.archived ? '<span class="retro-badge" style="background:#fee2e2; color:#991b1b; font-size:9px; padding:1px 6px;">HISTORICAL / SUPERSEDED</span>' : ''}
+                    <span class="retro-badge" style="background:#ede9fe; color:#5b21b6; font-size:10px; padding:2px 6px;">Match Score: ${sm.top_score}</span>
+                  </div>
+                </div>
+                <div style="font-size:11px; color:#64748b; font-style:italic; margin-top:3px;"><strong>Module Charter:</strong> ${sm.charter}</div>
+                <div style="margin-top:6px;">
+                  <strong style="font-size:11px; color:#4c1d95; font-family:'Fira Code';">CONTRIBUTED EVIDENCE FACTS:</strong>
+                  <ul style="font-size:12px; color:#1e1b4b; padding-left:18px; margin-top:2px; line-height:1.4;">
+                    ${factsList}
+                  </ul>
+                </div>
+              </div>
+            `;
+          });
+        } else {
+          slContainer.style.display = "none";
+        }
+
+        // Display Retrieved Context Evidence Chunks
+        const hits = data.hits || [];
+        if (hits.length === 0) {
+          resultsDiv.innerHTML = "<span style='color:#64748b;'>No matching memories found in active topology.</span>";
           return;
         }
 
-        data.hits.forEach((h, idx) => {
-          container.innerHTML += `
-            <div class="stream-item">
-              <strong style="color:var(--neon-cyan);">#${idx+1} [Module: ${h.module}]</strong> (Score: ${h.score})
-              ${h.archived ? '<span class="tag-superseded">SUPERSEDED / HISTORICAL</span>' : ''}
-              <div style="color:#eee; margin-top:3px;">"${h.text}"</div>
+        hits.forEach((h, idx) => {
+          resultsDiv.innerHTML += `
+            <div class="evidence-item">
+              <div style="display:flex; justify-content:space-between;">
+                <strong style="color:#4338ca;">#${idx+1} [Module: ${h.module}]</strong>
+                <span style="color:#d97706; font-size:11px;">Score: ${h.score}</span>
+              </div>
+              ${h.archived ? '<span style="background:#fee2e2; color:#991b1b; font-size:9px; padding:1px 6px; font-weight:bold; border-radius:2px;">SUPERSEDED / HISTORICAL</span>' : ''}
+              <div style="color:#0f172a; margin-top:3px;">"${h.text}"</div>
             </div>
           `;
         });
       } catch(e) {
-        container.innerHTML = "Query error: " + e.message;
+        resultsDiv.innerHTML = "Query error: " + e.message;
       }
     }
 
+    // --- ROLLBACK ---
     async function executeRollback() {
       const sel = document.getElementById("version-select");
       const v = sel.value;
@@ -619,8 +1740,8 @@
         const data = await res.json();
         alert(`Rollback successful! Active HEAD restored to: ${data.active_version}`);
         await refreshGraph();
-      } catch(err) {
-        alert("Rollback error: " + err.message);
+      } catch(e) {
+        alert("Rollback failed: " + e.message);
       }
     }
 

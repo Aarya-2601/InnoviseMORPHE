@@ -89,6 +89,8 @@ class BEIRSciFactEvaluator:
         corpus: Dict[str, Dict[str, str]] = {}
         with open(corpus_path, "r", encoding="utf-8") as f:
             for line in f:
+                if not line.strip():
+                    continue
                 item = json.loads(line)
                 doc_id = str(item["_id"])
                 # Always load docs that have relevance labels, fill remaining with distractors
@@ -105,6 +107,8 @@ class BEIRSciFactEvaluator:
         queries: Dict[str, str] = {}
         with open(queries_path, "r", encoding="utf-8") as f:
             for line in f:
+                if not line.strip():
+                    continue
                 item = json.loads(line)
                 qid = str(item["_id"])
                 if qid in qrels and any(did in corpus for did in qrels[qid]):
